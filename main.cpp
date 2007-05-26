@@ -40,6 +40,7 @@ freely, subject to the following restrictions:
 //------------------------------------------------------------------------------
 #include <cstdlib>
 #include <iostream>
+#include <time.h> 
 //#include <string>
 using namespace std;
 //------------------------------------------------------------------------------
@@ -55,10 +56,65 @@ bool joined;
 #define PART 11
 #define QUIT 12
 
+struct ircuser{ 
+    char *channel;  char *user; char *host; char *server;
+    char *nick;     char *mode; char *realname; time_t lasttime;
+	char *lastsaid; int  lines;};
+
+void userlist (char *channel, char *user, char *host, char *server,
+               char *nick,    char *mode, char *realname)
+{
+	// 352 messages
+	ircuser *meow;
+	meow = new ircuser;
+	
+	meow->channel = new char[strlen(channel)];
+	strcpy (meow->channel,channel);
+	meow->user = new char[strlen(user)];
+	strcpy (meow->user,user);
+	meow->host = new char[strlen(host)];
+	strcpy (meow->host,host);
+	meow->server = new char[strlen(server)];
+	strcpy (meow->server,server);
+	meow->nick = new char[strlen(nick)];
+	strcpy (meow->nick,nick);
+	meow->mode = new char[strlen(mode)];
+	strcpy (meow->mode,mode);
+	meow->realname = new char[strlen(realname)];
+	strcpy (meow->realname,realname);
+	meow->lasttime = time(NULL);
+	meow->lastsaid = "joined";
+	meow->lines = 0;
+	
+	printf("%s\n", meow->channel);
+	printf("%s\n", meow->user);
+	
+	delete meow->channel;
+	delete meow->user;
+	delete meow->host;
+	delete meow->server;
+	delete meow->nick;
+	delete meow->mode;
+	delete meow->realname;
+	delete meow;
+	
+	
+}	
+
 void verwerk (char type, char *nick, char *host, char *to, char *data)
 {
 	if (type==0){
 		printf("<%s> %s\n",nick,data);
+		if (data[0]=='!'){
+			if (strncmp("!test",data,5)==0){
+				char temp[128]="PRIVMSG ";
+				strcpy(temp+8,to);
+				strcpy(temp+strlen(temp)," Blah Blah Blah\x0D\x0A");
+				send (sServer,temp,strlen(temp),0);
+			}
+		}
+			
+		
 		// blah 
 	}
 	if (type==1){
@@ -191,7 +247,7 @@ void irc_received(char *data)
 		if (strncmp (Param[1],"352",3) == 0){
 			//userlist 
 			if (NrParam == 9){
-				printf("%s %s\n",Param[3],Param[7]);
+				//printf("%s %s\n",Param[3],Param[7]);
 				// hoe gaan we dit aanpakken
 				// 2 = mynick
 				// 3 = channel
@@ -201,14 +257,15 @@ void irc_received(char *data)
 				// 7 = nick van persoon
 				// 8 = mode
 				// 9 = realname
+				userlist(Param[3],Param[4],Param[5],Param[6],Param[7],Param[8],Param[9]);
 			}
 		}
 		
 		
 		if (strncmp (Param[1],"376",3) == 0){
        		printf("Ready to join\n");
-       		//send (sServer,"JOIN #bscp-testing\x0D\x0A",20,0);
-			send (sServer,"JOIN #test\x0D\x0A",12,0);
+       		send (sServer,"JOIN #bscp-testing\x0D\x0A",20,0);
+			//send (sServer,"JOIN #test\x0D\x0A",12,0);
 		}
 		if (strncmp (Param[1],"433",3) == 0){
 	  		if (NrParam == 4 ) {
@@ -308,8 +365,8 @@ test2:
 int main(int argc, char *argv[])
 {
     joined = false;
-    //if (connect("195.28.165.175",6667)==0) //indreanet
-    if (connect("62.75.201.175",6667)==0) //chat4all  
+    if (connect("195.28.165.175",6667)==0) //indreanet
+    //if (connect("62.75.201.175",6667)==0) //chat4all  
     	login ("bscp-test");
     return EXIT_SUCCESS;
 }
