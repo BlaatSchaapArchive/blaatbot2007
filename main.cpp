@@ -1,5 +1,5 @@
-//#define indreanet
-//
+#define indreanet
+
 /*
 BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
 
@@ -65,12 +65,13 @@ bool joined;
 
 struct ircuser{ 
     char *user; char *host; char *server;
-    char *nick;     char *mode; char *realname; time_t lasttime;
+    char *nick;     char *mode; char *realname; time_t lasttime; char lasttype;
 	char *lastsaid; int  lines; char *oldnick; int userlevel;};
 	
-struct ircchannel{char *channel; vector <ircuser*> users;};
+struct ircchannel{char *channel; vector <ircuser*> users; FILE *logfile;};
 
 vector <ircchannel*> channels;
+char *botnick;
 
 void userlist (char *channel, char *user, char *host, char *server,
                char *nick,    char *mode, char *realname)
@@ -145,6 +146,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 			
 			ircchannel *newchannel;
 			newchannel = new ircchannel;
+			newchannel->logfile = fopen (channel,"a");
     		newchannel->channel = new char[1+strlen(channel)];
 			strcpy (newchannel->channel,channel);
 			channels.push_back(newchannel);
@@ -164,8 +166,9 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 	if (type==0 || type==1 ){
 		if (type==0) printf("<%s> %s\n",nick,data);
 		if (type==1) printf("* %s %s *\n",nick,data);
-			
-		if (strcmp(to,"bscp-test")==0){ // verander dit, botnick variable
+
+		
+		if (strcmp(to,botnick)==0){ // verander dit, botnick variable
 			printf("%s zit in privé\n",nick);
 		} 
 		else {
@@ -177,14 +180,17 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 
 				for ( b = 0; ( b < channels[a]->users.size() ) && 
 					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
-			//printf("nu praat %s\n",channels[a]->users[b]->nick);
 			delete (channels[a]->users[b]->lastsaid); 
-				
-			// toevoeg type message?				
+			channels[a]->users[b]->lasttype=type;
 			channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
 		    strcpy(channels[a]->users[b]->lastsaid,data);
 			channels[a]->users[b]->lasttime = time(NULL);
 			channels[a]->users[b]->lines++;
+			
+		    //logging
+			if (type==0) fprintf(channels[a]->logfile,"<%s> %s\n",nick,data);
+		    if (type==1) fprintf(channels[a]->logfile,"* %s %s *\n",nick,data);			
+						
 			if (channels[a]->users[b]->lines==10) {
 				printf("geef voice aan %s\n",nick);
 				char temp[128]="MODE ";
@@ -206,9 +212,26 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 			if (strncmp("!test",data,5)==0){
 				char temp[128]="PRIVMSG ";
 				strcpy(temp+8,to);
-				strcpy(temp+strlen(temp)," Blah Blah Blah\xD\xA");
+				strcpy(temp+strlen(temp)," Botnick ");
+				strcpy(temp+strlen(temp),botnick);
 				send (sServer,temp,strlen(temp),0);
+				send (sServer,"\xD\xA",2,0);
 			}
+			if (strncmp("!nick",data,5)==0){
+				char temp[128]="NICK ";
+				strcpy(temp+5,data+6);
+				printf("nickchange, testing only, auth later\n");
+				send (sServer,temp,strlen(temp),0);
+				send (sServer,"\xD\xA",2,0);
+			}
+			if (strncmp("!join",data,5)==0){
+				char temp[128]="JOIN ";
+				strcpy(temp+5,data+6);
+				printf("joining, testing only, auth later\n");
+				send (sServer,temp,strlen(temp),0);
+				send (sServer,"\xD\xA",2,0);
+			}
+			
 		}
 			
 		
@@ -227,7 +250,11 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		send (sServer,"\xD\xA",2,0);
 	}
 	if (type==NICK){
-	//if (false){//debug
+		if (strcmp(botnick,data)==0){
+			delete botnick;
+			botnick = new char[1+strlen(data)];
+			strcpy(botnick,data);
+		}
 		int a,b;
 		//for (a = 0; a < channels.size();a++)
 		a=0;
@@ -438,7 +465,10 @@ void irc_received(char *data)
       	  		nick[strlen(nick)+1]=0x00;
 		  		nick[strlen(nick)]='_';	  
 		  		printf("Retrying with %s ...\n",nick);	      
-		  		char temp[25]="NICK ";      
+		  		delete botnick;
+				botnick = new char[1+strlen(nick)];
+				strcpy(botnick,nick);
+				char temp[25]="NICK ";      
 		  		strcpy (temp+5,nick);
           		strcpy (temp+(strlen(temp)),"\x0D\x0A");		  
 	      		send (sServer,temp,strlen(temp),0);  
@@ -481,12 +511,12 @@ printf("Connecting to %s:%d...\n",ip,port);
   return 0;
 }
 
-int login (char* nick)
+int login ()
 {
-	printf("Connected... logging in as %s ...\n",nick);
+	printf("Connected... logging in as %s ...\n",botnick);
     char temp[9999]="NICK ";
-    strncpy(temp+5,nick, strlen(nick));
-    strncpy(temp+5+strlen(nick),"\x0D\x0A",3);
+    strncpy(temp+5,botnick, strlen(botnick));
+    strncpy(temp+5+strlen(botnick),"\x0D\x0A",3);
     send (sServer,temp, strlen(temp), 0);
     strcpy(temp,"USER bscp bscp bscp :bcsp\x0D\x0A");
     send (sServer,temp, strlen(temp), 0);
@@ -531,7 +561,9 @@ int main(int argc, char *argv[])
     if (connect("195.28.165.175",6667)==0) //indreanet
 #else		
     if (connect("62.75.201.175",6667)==0) //chat4all  
-#endif		
-    	login ("bscp-test");
+#endif	
+	botnick = new char[1+sizeof("bscp-test")];
+	strcpy(botnick,"bscp-test");
+    	login ();
     return EXIT_SUCCESS;
 }
