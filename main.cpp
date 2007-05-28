@@ -73,28 +73,35 @@ struct ircchannel{char *channel; vector <ircuser*> users; FILE *logfile;};
 vector <ircchannel*> channels;
 char *botnick;
 
+void getChannelUser (int &a, int &b, char *channel, char *nick)
+{
+	
+	for ( a = 0; (a < channels.size()) &&
+		                      (strcmp (channel,channels[a]->channel) != 0);a++);
+	if ( a < channels.size() ) { // channel bestaat 
+			for ( b = 0; ( b < channels[a]->users.size() ) &&
+			              (strcmp(nick,channels[a]->users[b]->nick) != 0); b++); 
+			if ( b < channels[a]->users.size() ) // user bestaat in channel;     
+			{ } else b=-1; } else a=-1;
+}
+
 void userlist (char *channel, char *user, char *host, char *server,
                char *nick,    char *mode, char *realname)
 {
-	// 352 messages
-	// dit is conecpt, moet helemaal anders.
-	// per channel ircchannel met daarin een vector met ircusers
-	// 
     int a,b;
-	for ( a = 0; (a < channels.size()) && 
-		                      (strlen(channel)!=strlen(channels[a]->channel)) &&
-			                  (strcmp (channel,channels[a]->channel) != 0);a++);
-	if ( a < channels.size() ) { // channel bestaat 
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					      (strlen(nick)!=strlen(channels[a]->users[b]->nick)) &&
-			              (strcmp(nick,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) // user bestaat in channel;
-			{
-				// user bestaat, doe niets... // --> mode aanpassen misschien?
+	getChannelUser(a,b,channel,nick);
+	if ( a != -1) { if ( b != -1 ) {
+			
+				// user bestaat // contrõle op mode 
 				if (strcmp(mode,channels[a]->users[b]->mode )!= 0 ){
 					delete channels[a]->users[b]->mode;
 					channels[a]->users[b]->mode = new char[1+strlen(mode)];
 					strcpy (channels[a]->users[b]->mode,mode);
+				}
+				if (channels[a]->users[b]->lasttype == 'P' ||	
+					channels[a]->users[b]->lasttype == 'Q' ){
+						channels[a]->users[b]->lasttype = 'J';
+						channels[a]->users[b]->lasttime=time(NULL);
 				}
 			
 				
@@ -188,14 +195,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		else {
 			//channel message
 			int a,b;
-			           // dit stukje code word meer keer herhaald, naar functie?
-			for ( a = 0; (a < channels.size()) && 
-				                   (strlen(to)!=strlen(channels[a]->channel)) &&
-			                       (strcmp (to,channels[a]->channel) != 0);a++);
-
-				for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   (strlen(nick)!= strlen(channels[a]->users[b]->nick)) &&
-					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+			getChannelUser(a,b,to,nick);
 			
 			delete (channels[a]->users[b]->lastsaid); 
 			channels[a]->users[b]->lasttype=type;
@@ -221,13 +221,6 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 			if (channels[a]->users[b]->lines==10) {
 				printf("geef voice aan %s\n",nick);
 			    setmode(to,nick,"+v");
-//				char temp[128]="MODE ";
-//				strcpy (temp+5,to);
-//				strcpy (temp+strlen(temp)," +v ");
-//				strcpy (temp+strlen(temp),nick);
-//				strcpy (temp+strlen(temp),"\xD\xA");
-//				send (sServer,temp,strlen(temp),0);
-//				printf("%s",temp);
 			}
 			printf("%s heeft al %d keer iets gezegd.\n",channels[a]->users[b]->nick,channels[a]->users[b]->lines);
 				
@@ -261,19 +254,12 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 			}
 			if (strncmp("!seen",data,5)==0){
 			   
-			   //deze code tot functie omwerken ... heeft alle contrôles of
-			   //het wel bestaat en zo
-			   // (copy pasted from userlist)
-			 	int a,b;
-				for ( a = 0; (a < channels.size()) && 
-		                      (strlen(to)!=strlen(channels[a]->channel)) &&
-			                  (strcmp (to,channels[a]->channel) != 0);a++);
-				if ( a < channels.size() ) { // channel bestaat 
-					for ( b = 0; ( b < channels[a]->users.size() ) && 
-					      (strlen(data+6)!=strlen(channels[a]->users[b]->nick)) &&
-			              (strcmp(data+6,channels[a]->users[b]->nick) != 0); b++);
-				if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				// end of copy paste
+		 	int a=-1,b=-1;
+
+    if (data+5!=NULL) getChannelUser(a,b,to,data+6);
+	if ( a != -1){if ( b != -1){
+
+				
 				char temp[128];
 				// --> maak van privmsg een functie!!! 
 					//data[strlen(data)-1]=0;
@@ -333,7 +319,10 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		}
 		int a,b;
 		//for (a = 0; a < channels.size();a++)
-		a=0;
+		a=0; // iets andere code omschrijvne?
+             //		--> getChannelUser(a,b,channel,nick);
+
+
 		while ( a < channels.size() )
 		{
 			for ( b = 0; ( b < channels[a]->users.size() ) && 
@@ -355,78 +344,42 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 	if (type==PART){
 		printf("PART\n");
 		int a,b;
-		/* oude foute code 
-		for ( a = 0; (a < channels.size()) && 
-			                       (strcmp (to,channels[a]->channel) != 0);a++);
-				for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
-			*/	
-		
-			for ( a = 0; (a < channels.size()) && 
-		                      (strlen(to)!=strlen(channels[a]->channel)) &&
-			                  (strcmp (to,channels[a]->channel) != 0);a++);
-	if ( a < channels.size() ) { // channel bestaat 
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					      (strlen(nick)!=strlen(channels[a]->users[b]->nick)) &&
-			              (strcmp(nick,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				
-			/// vervangen door dit ... omzetten naar functie!!!!
-                printf("user part %s\n",channels[a]->users[b]->nick); 		
-				delete channels[a]->users[b]->mode;
-				channels[a]->users[b]->mode = new char[2];
-				strcpy(channels[a]->users[b]->mode,"P");
+	
+	getChannelUser(a,b,to,nick);
+	if ( a != -1) { if ( b != -1 ) {
+
+			
+                //printf("user part %s\n",channels[a]->users[b]->nick); 		
+				//delete channels[a]->users[b]->mode;
+			    //channels[a]->users[b]->mode = new char[2];
+				//strcpy(channels[a]->users[b]->mode,"P");
 				channels[a]->users[b]->lasttime=time(NULL);
-				// --> maak er dit van?
+				
+	            channels[a]->users[b]->lines=0;	
 				channels[a]->users[b]->lasttype='P';
 			}}
 		//blah
 	}
 	if (type==QUIT)	{
 		int a,b;
-		for ( a = 0; (a < channels.size()) && 
-		                      (strlen(to)!=strlen(channels[a]->channel)) &&
-			                  (strcmp (to,channels[a]->channel) != 0);a++);
-	if ( a < channels.size() ) { // channel bestaat 
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					      (strlen(nick)!=strlen(channels[a]->users[b]->nick)) &&
-			              (strcmp(nick,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				
-			/// vervangen door dit ... omzetten naar functie!!!!
-		int a,b;
+
+
+	getChannelUser(a,b,to,nick);
+	if ( a != -1) { if ( b != -1 ) {
 		
-		/* zelfde 
-		for (a = 0; a < channels.size();a++)
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() )
-		
-		*/for ( a = 0; (a < channels.size()) && 
-		                      (strlen(to)!=strlen(channels[a]->channel)) &&
-			                  (strcmp (to,channels[a]->channel) != 0);a++);
-	if ( a < channels.size() ) { // channel bestaat 
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					      (strlen(nick)!=strlen(channels[a]->users[b]->nick)) &&
-			              (strcmp(nick,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				
-			/// vervangen door dit ... omzetten naar functie!!!!
-			
-				delete channels[a]->users[b]->mode;
-				channels[a]->users[b]->mode = new char[2];
-				strcpy(channels[a]->users[b]->mode,"Q");
+				//delete channels[a]->users[b]->mode;
+		        //channels[a]->users[b]->mode = new char[2];
+				//strcpy(channels[a]->users[b]->mode,"Q");
 				channels[a]->users[b]->lasttime=time(NULL);
 				// of iets van
 				channels[a]->users[b]->lasttype='Q';
+		        channels[a]->users[b]->lasttype='P';
 				
-			}}
-		}}
+			}
+		}
 	}
-	
-	
-	//printf("blah");
 }
+
 
 void irc_received(char *data)
 {
@@ -569,7 +522,7 @@ void irc_received(char *data)
 		if (strncmp (Param[1],"376",3) == 0){
        		printf("Ready to join\n");
        		#ifdef indreanet    
-			send (sServer,"JOIN #bscp-testing\xD\xA",20,0);
+			//send (sServer,"JOIN #bscp-testing\xD\xA",20,0);
 			send (sServer,"JOIN #test\xD\xA",12,0);
 			#else
 			//send (sServer,"JOIN #test\xD\xA",12,0);
