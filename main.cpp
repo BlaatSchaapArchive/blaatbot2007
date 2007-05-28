@@ -1,5 +1,9 @@
+//#define indreanet
+
 /*
-BlaatSchaap Coding Projects : IRC BOT IN C / C++
+BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
+
+
 File    : main.cpp
 License : Zlib
 --------------------------------------------------------------------------------
@@ -42,10 +46,12 @@ freely, subject to the following restrictions:
 #include <iostream>
 #include <time.h> 
 //#include <string>
+#include <vector>
 using namespace std;
 //------------------------------------------------------------------------------
 SOCKET sServer;
 bool joined;
+
 //------------------------------------------------------------------------------
 //
 
@@ -54,62 +60,151 @@ bool joined;
 #define NoticeMessage 2
 #define JOIN 10
 #define PART 11
-#define QUIT 12
+#define NICK 12
+#define QUIT 13
 
 struct ircuser{ 
-    char *channel;  char *user; char *host; char *server;
+    char *user; char *host; char *server;
     char *nick;     char *mode; char *realname; time_t lasttime;
-	char *lastsaid; int  lines;};
+	char *lastsaid; int  lines; char *oldnick; int userlevel;};
+	
+struct ircchannel{char *channel; vector <ircuser*> users;};
+
+vector <ircchannel*> channels;
 
 void userlist (char *channel, char *user, char *host, char *server,
                char *nick,    char *mode, char *realname)
 {
 	// 352 messages
-	ircuser *meow;
-	meow = new ircuser;
+	// dit is conecpt, moet helemaal anders.
+	// per channel ircchannel met daarin een vector met ircusers
+	// 
+    int a,b;
+	for ( a = 0; (a < channels.size()) && 
+			                  (strcmp (channel,channels[a]->channel) != 0);a++);
+	if ( a < channels.size() ) { // channel bestaat
+			for ( b = 0; ( b < channels[a]->users.size() ) && 
+					      (strcmp(nick,channels[a]->users[b]->nick) != 0); b++);
+			if ( b < channels[a]->users.size() ) // user bestaat in channel;
+			{
+				// user bestaat, doe niets... // --> mode aanpassen misschien?
+				if (strcmp(mode,channels[a]->users[b]->mode )!= 0 ){
+					delete channels[a]->users[b]->mode;
+					channels[a]->users[b]->mode = new char[strlen(mode)];
+					strcpy (channels[a]->users[b]->mode,mode);
+				}
+			
+				
+			} 
+			else{ // user bestaat niet in channel;
+		
+				ircuser *newuser;
+				newuser = new ircuser;
+
+				newuser->user = new char[strlen(user)];
+				strcpy (newuser->user,user);
+				newuser->host = new char[strlen(host)];
+				strcpy (newuser->host,host);
+				newuser->server = new char[strlen(server)];
+				strcpy (newuser->server,server);
+				newuser->nick = new char[strlen(nick)];
+				strcpy (newuser->nick,nick);
+				newuser->mode = new char[strlen(mode)];
+				strcpy (newuser->mode,mode);
+				newuser->realname = new char[strlen(realname)];
+				strcpy (newuser->realname,realname);
+				newuser->lasttime = time(NULL);
+				newuser->lastsaid = NULL;
+				//strcpy (newuser->lastsaid,"joined");
+				newuser->oldnick=NULL;
+				newuser->lines = 0;
+				channels[channels.size()-1]->users.push_back(newuser);	
+			}
+		}
+		else{//channel bestaat niet
+		
+			ircuser *newuser;
+			newuser = new ircuser;
+			
+			newuser->user = new char[strlen(user)];
+			strcpy (newuser->user,user);
+			newuser->host = new char[strlen(host)];
+			strcpy (newuser->host,host);
+			newuser->server = new char[strlen(server)];
+			strcpy (newuser->server,server);
+			newuser->nick = new char[strlen(nick)];
+			strcpy (newuser->nick,nick);
+			newuser->mode = new char[strlen(mode)];
+			strcpy (newuser->mode,mode);
+			newuser->realname = new char[strlen(realname)];
+			strcpy (newuser->realname,realname);
+			newuser->lasttime = time(NULL);
+			newuser->lastsaid = NULL;
+			newuser->lines = 0;		
+			newuser->oldnick=NULL;
+			
+			ircchannel *newchannel;
+			newchannel = new ircchannel;
+    		newchannel->channel = new char[strlen(channel)];
+			strcpy (newchannel->channel,channel);
+			channels.push_back(newchannel);
+			channels[channels.size()-1]->users.push_back(newuser); 
+		}
+		
 	
-	meow->channel = new char[strlen(channel)];
-	strcpy (meow->channel,channel);
-	meow->user = new char[strlen(user)];
-	strcpy (meow->user,user);
-	meow->host = new char[strlen(host)];
-	strcpy (meow->host,host);
-	meow->server = new char[strlen(server)];
-	strcpy (meow->server,server);
-	meow->nick = new char[strlen(nick)];
-	strcpy (meow->nick,nick);
-	meow->mode = new char[strlen(mode)];
-	strcpy (meow->mode,mode);
-	meow->realname = new char[strlen(realname)];
-	strcpy (meow->realname,realname);
-	meow->lasttime = time(NULL);
-	meow->lastsaid = "joined";
-	meow->lines = 0;
 	
-	printf("%s\n", meow->channel);
-	printf("%s\n", meow->user);
-	
-	delete meow->channel;
-	delete meow->user;
-	delete meow->host;
-	delete meow->server;
-	delete meow->nick;
-	delete meow->mode;
-	delete meow->realname;
-	delete meow;
+	printf("%s\n",channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->nick);
+		
 	
 	
 }	
 
 void verwerk (char type, char *nick, char *host, char *to, char *data)
 {
-	if (type==0){
-		printf("<%s> %s\n",nick,data);
+	if (type==0 || type==1 ){
+		if (type==0) printf("<%s> %s\n",nick,data);
+		if (type==1) printf("* %s %s *\n",nick,data);
+			
+		if (strcmp(to,"bscp-test")==0){ // verander dit, botnick variable
+			printf("%s zit in privé\n",nick);
+		} 
+		else {
+			//channel message
+			int a,b;
+			
+			for ( a = 0; (a < channels.size()) && 
+			                       (strcmp (to,channels[a]->channel) != 0);a++);
+				for ( b = 0; ( b < channels[a]->users.size() ) && 
+					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+			//printf("nu praat %s\n",channels[a]->users[b]->nick);
+			delete channels[a]->users[b]->lastsaid;
+			// toevoeg type message?				
+			channels[a]->users[b]->lastsaid = new char[strlen(data)];
+		    strcpy(channels[a]->users[b]->lastsaid,data);
+			channels[a]->users[b]->lasttime = time(NULL);
+			channels[a]->users[b]->lines++;
+			if (channels[a]->users[b]->lines==10) {
+				printf("geef voice aan %s\n",nick);
+				char temp[128]="MODE ";
+				strcpy (temp+5,to);
+				strcpy (temp+strlen(temp)," +v ");
+				strcpy (temp+strlen(temp),nick);
+				strcpy (temp+strlen(temp),"\xD\xA");
+				send (sServer,temp,strlen(temp),0);
+				printf("%s",temp);
+			}
+			printf("%s heeft al %d keer iets gezegd.\n",channels[a]->users[b]->nick,channels[a]->users[b]->lines);
+				
+		}
+		
+			
+			
+		
 		if (data[0]=='!'){
 			if (strncmp("!test",data,5)==0){
 				char temp[128]="PRIVMSG ";
 				strcpy(temp+8,to);
-				strcpy(temp+strlen(temp)," Blah Blah Blah\x0D\x0A");
+				strcpy(temp+strlen(temp)," Blah Blah Blah\xD\xA");
 				send (sServer,temp,strlen(temp),0);
 			}
 		}
@@ -117,21 +212,71 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		
 		// blah 
 	}
-	if (type==1){
-		printf("%s %s\n",nick, data);
-		//blah
-	}
+
 	if (type==2){
 		printf("-%s-%s\n",nick, data);
 		//blah
 	}
-	if (type==10){
+	if (type==JOIN){
 		printf("%s joined %s\n",nick, to);
 		char temp[128]="WHO ";
 		strcpy(temp+4,to);
 		send(sServer,temp,strlen(temp),0);
 		send (sServer,"\x0D\x0A",2,0);
 	}
+	if (type==NICK){
+	//if (false){//debug
+		int a,b;
+		//for (a = 0; a < channels.size();a++)
+		a=0;
+		while ( a < channels.size() )
+		{
+			for ( b = 0; ( b < channels[a]->users.size() ) && 
+					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+			if ( b < channels[a]->users.size() ) // user bestaat in channel;
+			{
+				//printf("nickchange %s\n", channels[a]->channel);
+				if (channels[a]->users[b]->oldnick!=NULL) delete channels[a]->users[b]->oldnick;
+				channels[a]->users[b]->oldnick=channels[a]->users[b]->nick;
+				channels[a]->users[b]->nick= new char[strlen(data)];
+				strcpy(channels[a]->users[b]->nick,data);
+			}
+			a++;
+		}
+        printf("done\n");		
+		
+	}
+	
+	if (type==PART){
+		int a,b;
+		for ( a = 0; (a < channels.size()) && 
+			                       (strcmp (to,channels[a]->channel) != 0);a++);
+				for ( b = 0; ( b < channels[a]->users.size() ) && 
+					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+				
+				delete channels[a]->users[b]->mode;
+				channels[a]->users[b]->mode = new char[2];
+				strcpy(channels[a]->users[b]->mode,"P");
+				channels[a]->users[b]->lasttime=time(NULL);
+				
+		
+		//blah
+	}
+	if (type==QUIT){
+		int a,b;
+		for (a = 0; a < channels.size();a++)
+			for ( b = 0; ( b < channels[a]->users.size() ) && 
+					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+			if ( b < channels[a]->users.size() )
+			{
+				delete channels[a]->users[b]->mode;
+				channels[a]->users[b]->mode = new char[2];
+				strcpy(channels[a]->users[b]->mode,"Q");
+				channels[a]->users[b]->lasttime=time(NULL);
+			}
+		
+	}
+	
 	
 	//printf("blah");
 }
@@ -175,11 +320,14 @@ void irc_received(char *data)
 	}
   
     if (strlen(Param[1])==4){
-		if (strncmp (Param[1],"JOIN",4) == 0){
-			if (NrParam == 2 ) {  
+		if (strncmp (Param[1],"JOIN",4) == 0 ||
+			strncmp (Param[1],"PARN",4) == 0 ||
+		    strncmp (Param[1],"NICK",4) == 0 ){ 
+			//if (NrParam == 2 ) {  
+				{
 				char* nick;
           		char* mask=NULL;
-		  		char* channel=Param[2]+1;
+		  		//char* channel=Param[2]+1;
           		nick = Param[0]+1;
           		Ptr = nick;
           		while(*Ptr != 0 && !done) {
@@ -190,11 +338,19 @@ void irc_received(char *data)
 					}
             		Ptr++;
 				}
-        		//printf("%s joined %s\n",nick, channel);		  
-				verwerk(10,nick,mask,channel,NULL);
+        		// --- kies hier ---- 
+				if (strncmp (Param[1],"JOIN",4) == 0) 
+					verwerk(JOIN,nick,mask,Param[2]+1,NULL);
+				if (strncmp (Param[1],"PART",4) == 0) 
+					verwerk(PART,nick,mask,Param[2],Param[3]);
+				if (strncmp (Param[1],"NICK",4) == 0) 
+					verwerk(NICK,nick,mask,NULL,Param[2]+1);
+				if (strncmp (Param[1],"QUIT",4) == 0) 
+					verwerk(QUIT,nick,mask,Param[2],Param[3]);
+
 			}
 		}
-    }
+	}
 	
     if (strlen(Param[1])==7){
     	if (strncmp (Param[1],"PRIVMSG",7) == 0){
@@ -245,6 +401,7 @@ void irc_received(char *data)
 			printf("Login Successfull\n");
   		}
 		if (strncmp (Param[1],"352",3) == 0){
+		
 			//userlist 
 			if (NrParam == 9){
 				//printf("%s %s\n",Param[3],Param[7]);
@@ -257,15 +414,21 @@ void irc_received(char *data)
 				// 7 = nick van persoon
 				// 8 = mode
 				// 9 = realname
-				userlist(Param[3],Param[4],Param[5],Param[6],Param[7],Param[8],Param[9]);
+				userlist(Param[3],Param[4],Param[5],Param[6],
+				         Param[7],Param[8],Param[9]);
 			}
 		}
 		
 		
 		if (strncmp (Param[1],"376",3) == 0){
        		printf("Ready to join\n");
-       		send (sServer,"JOIN #bscp-testing\x0D\x0A",20,0);
-			//send (sServer,"JOIN #test\x0D\x0A",12,0);
+       		#ifdef indreanet    
+			send (sServer,"JOIN #bscp-testing\xD\xA",20,0);
+			send (sServer,"JOIN #test\xD\xA",12,0);
+			#else
+			//send (sServer,"JOIN #test\xD\xA",12,0);
+			send (sServer,"JOIN #blaatschaap\xD\xA",19,0); //moet ik wel /xd/xa 
+			#endif
 		}
 		if (strncmp (Param[1],"433",3) == 0){
 	  		if (NrParam == 4 ) {
@@ -283,8 +446,6 @@ void irc_received(char *data)
   		}
 		
     }
-
-	
 
 }
 
@@ -365,8 +526,11 @@ test2:
 int main(int argc, char *argv[])
 {
     joined = false;
+#ifdef indreanet	
     if (connect("195.28.165.175",6667)==0) //indreanet
-    //if (connect("62.75.201.175",6667)==0) //chat4all  
+#else		
+    if (connect("62.75.201.175",6667)==0) //chat4all  
+#endif		
     	login ("bscp-test");
     return EXIT_SUCCESS;
 }
