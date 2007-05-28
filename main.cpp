@@ -1,5 +1,5 @@
 //#define indreanet
-
+//
 /*
 BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
 
@@ -82,7 +82,7 @@ void userlist (char *channel, char *user, char *host, char *server,
     int a,b;
 	for ( a = 0; (a < channels.size()) && 
 			                  (strcmp (channel,channels[a]->channel) != 0);a++);
-	if ( a < channels.size() ) { // channel bestaat
+	if ( a < channels.size() ) { // channel bestaat //?-1
 			for ( b = 0; ( b < channels[a]->users.size() ) && 
 					      (strcmp(nick,channels[a]->users[b]->nick) != 0); b++);
 			if ( b < channels[a]->users.size() ) // user bestaat in channel;
@@ -90,7 +90,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 				// user bestaat, doe niets... // --> mode aanpassen misschien?
 				if (strcmp(mode,channels[a]->users[b]->mode )!= 0 ){
 					delete channels[a]->users[b]->mode;
-					channels[a]->users[b]->mode = new char[strlen(mode)];
+					channels[a]->users[b]->mode = new char[1+strlen(mode)];
 					strcpy (channels[a]->users[b]->mode,mode);
 				}
 			
@@ -101,17 +101,17 @@ void userlist (char *channel, char *user, char *host, char *server,
 				ircuser *newuser;
 				newuser = new ircuser;
 
-				newuser->user = new char[strlen(user)];
+				newuser->user = new char[1+strlen(user)];
 				strcpy (newuser->user,user);
-				newuser->host = new char[strlen(host)];
+				newuser->host = new char[1+strlen(host)];
 				strcpy (newuser->host,host);
-				newuser->server = new char[strlen(server)];
+				newuser->server = new char[1+strlen(server)];
 				strcpy (newuser->server,server);
-				newuser->nick = new char[strlen(nick)];
+				newuser->nick = new char[1+strlen(nick)];
 				strcpy (newuser->nick,nick);
-				newuser->mode = new char[strlen(mode)];
+				newuser->mode = new char[1+strlen(mode)];
 				strcpy (newuser->mode,mode);
-				newuser->realname = new char[strlen(realname)];
+				newuser->realname = new char[1+strlen(realname)];
 				strcpy (newuser->realname,realname);
 				newuser->lasttime = time(NULL);
 				newuser->lastsaid = NULL;
@@ -126,17 +126,17 @@ void userlist (char *channel, char *user, char *host, char *server,
 			ircuser *newuser;
 			newuser = new ircuser;
 			
-			newuser->user = new char[strlen(user)];
+			newuser->user = new char[1+strlen(user)];
 			strcpy (newuser->user,user);
-			newuser->host = new char[strlen(host)];
+			newuser->host = new char[1+strlen(host)];
 			strcpy (newuser->host,host);
-			newuser->server = new char[strlen(server)];
+			newuser->server = new char[1+strlen(server)];
 			strcpy (newuser->server,server);
-			newuser->nick = new char[strlen(nick)];
+			newuser->nick = new char[1+strlen(nick)];
 			strcpy (newuser->nick,nick);
-			newuser->mode = new char[strlen(mode)];
+			newuser->mode = new char[1+strlen(mode)];
 			strcpy (newuser->mode,mode);
-			newuser->realname = new char[strlen(realname)];
+			newuser->realname = new char[1+strlen(realname)];
 			strcpy (newuser->realname,realname);
 			newuser->lasttime = time(NULL);
 			newuser->lastsaid = NULL;
@@ -145,7 +145,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 			
 			ircchannel *newchannel;
 			newchannel = new ircchannel;
-    		newchannel->channel = new char[strlen(channel)];
+    		newchannel->channel = new char[1+strlen(channel)];
 			strcpy (newchannel->channel,channel);
 			channels.push_back(newchannel);
 			channels[channels.size()-1]->users.push_back(newuser); 
@@ -174,12 +174,14 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 			
 			for ( a = 0; (a < channels.size()) && 
 			                       (strcmp (to,channels[a]->channel) != 0);a++);
+
 				for ( b = 0; ( b < channels[a]->users.size() ) && 
 					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
 			//printf("nu praat %s\n",channels[a]->users[b]->nick);
-			delete channels[a]->users[b]->lastsaid;
+			delete (channels[a]->users[b]->lastsaid); 
+				
 			// toevoeg type message?				
-			channels[a]->users[b]->lastsaid = new char[strlen(data)];
+			channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
 		    strcpy(channels[a]->users[b]->lastsaid,data);
 			channels[a]->users[b]->lasttime = time(NULL);
 			channels[a]->users[b]->lines++;
@@ -222,7 +224,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		char temp[128]="WHO ";
 		strcpy(temp+4,to);
 		send(sServer,temp,strlen(temp),0);
-		send (sServer,"\x0D\x0A",2,0);
+		send (sServer,"\xD\xA",2,0);
 	}
 	if (type==NICK){
 	//if (false){//debug
@@ -238,7 +240,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 				//printf("nickchange %s\n", channels[a]->channel);
 				if (channels[a]->users[b]->oldnick!=NULL) delete channels[a]->users[b]->oldnick;
 				channels[a]->users[b]->oldnick=channels[a]->users[b]->nick;
-				channels[a]->users[b]->nick= new char[strlen(data)];
+				channels[a]->users[b]->nick= new char[1+strlen(data)];
 				strcpy(channels[a]->users[b]->nick,data);
 			}
 			a++;
@@ -418,7 +420,6 @@ void irc_received(char *data)
 				         Param[7],Param[8],Param[9]);
 			}
 		}
-		
 		
 		if (strncmp (Param[1],"376",3) == 0){
        		printf("Ready to join\n");
