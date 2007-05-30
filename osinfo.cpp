@@ -29,7 +29,7 @@ freely, subject to the following restrictions:
 --------------------------------------------------------------------------------
 
 TODO :
-     *  Implement M$-Windows-syle Operating Systems
+
 
 
 
@@ -37,8 +37,142 @@ TODO :
 
 
 #ifdef __WIN32__              // compile for WIN32
-// insert winblows code here
+#include <windows.h>
+#include <stdio.h>
+#include <string.h>
+
 void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+
+char ostype_[128];
+char osname_[128];
+char osrelease_[128];
+char machine_[128];
+
+
+    OSVERSIONINFO winver;
+    ZeroMemory(&winver, sizeof(OSVERSIONINFO));
+    winver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    GetVersionEx(&winver);
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+
+    switch (winver.dwPlatformId){
+        case 0:
+            strcpy(ostype_,"Win32s");
+            break;
+        case 1:
+            strcpy(ostype_,"Windows 9x");
+            break;
+        case 2:
+            strcpy(ostype_,"Windows NT");
+            break;
+        case 3:
+            strcpy(ostype_,"Windows CE");
+            break;
+        default:
+            strcpy(ostype_,"Unknown");
+    }
+
+
+
+sprintf(osrelease_,"%d.%d.%d",
+        winver.dwMajorVersion,
+        winver.dwMinorVersion,
+        winver.dwBuildNumber);
+
+if ( (winver.dwMajorVersion < 5) &&
+     (winver.dwPlatformId  == 2) ){
+     sprintf(osname_,"Windows NT %s %s",osrelease,winver.szCSDVersion);
+}
+if ( (winver.dwMajorVersion  < 5) &&
+     (winver.dwMinorVersion == 0) &&
+     (winver.dwPlatformId   == 2) ){
+     sprintf(osname_,"Windows 2000 %s",winver.szCSDVersion);
+}
+if ( (winver.dwMajorVersion  < 5) &&
+     (winver.dwMinorVersion == 1) &&
+     (winver.dwPlatformId   == 2) ){
+     sprintf(osname_,"Windows XP %s",winver.szCSDVersion);
+}
+if ( (winver.dwMajorVersion  < 5) &&
+     (winver.dwMinorVersion == 2) &&
+     (winver.dwPlatformId   == 2) ){
+     if (si.wProcessorArchitecture)
+     sprintf(osname_,"Windows XP %s",winver.szCSDVersion);
+     // 64 bit windows XP
+     else
+     sprintf(osname_,"Windows 2003 %s",winver.szCSDVersion);
+
+}
+if ( (winver.dwMajorVersion  < 6) &&
+     (winver.dwMinorVersion == 0) &&
+     (winver.dwPlatformId   == 2) ){
+     sprintf(osname_,"Windows Vista %s",winver.szCSDVersion);
+}
+
+if ( (winver.dwMajorVersion  < 4) &&
+     (winver.dwMinorVersion == 0) &&
+     (winver.dwPlatformId   == 1) ){
+     sprintf(osname_,"Windows 95 %s",winver.szCSDVersion);
+
+}
+if ( (winver.dwMajorVersion  < 4) &&
+     (winver.dwMinorVersion == 10) &&
+     (winver.dwPlatformId   == 2) ){
+     sprintf(osname_,"Windows 98 %s",winver.szCSDVersion);
+}
+if ( (winver.dwMajorVersion  < 4) &&
+     (winver.dwMinorVersion == 90) &&
+     (winver.dwPlatformId   == 2) ){
+     sprintf(osname_,"Windows ME %s",winver.szCSDVersion);
+}
+if ( (winver.dwPlatformId   == 1) ){
+     sprintf(osname_,"Win32s %s",winver.szCSDVersion);
+}
+
+
+   switch (si.wProcessorArchitecture){
+   // current CPU Architectures
+       case PROCESSOR_ARCHITECTURE_INTEL: //0
+           strcpy(machine_,"i386");
+           break;
+       case PROCESSOR_ARCHITECTURE_IA64: //6
+           strcpy(machine_,"IA64");
+           break;
+       case PROCESSOR_ARCHITECTURE_AMD64://9
+           strcpy(machine_,"x86-64");
+           break;
+     // obsolete CPU Architectures (NT 3)
+       case PROCESSOR_ARCHITECTURE_MIPS: // also used in WinCE devices?
+           strcpy(machine_,"MIPS");
+           break;
+       case PROCESSOR_ARCHITECTURE_ALPHA:
+           strcpy(machine_,"Alpha");
+           break;
+       case PROCESSOR_ARCHITECTURE_PPC:
+           strcpy(machine_,"PowerPC");
+           break;
+     // Mobile CPU Architectures (WinCE)
+        //PROCESSOR_ARCHITECTURE_MIPS already in obsolete
+       case PROCESSOR_ARCHITECTURE_SHX:
+           strcpy(machine_,"SHX");
+           break;
+       case PROCESSOR_ARCHITECTURE_ARM:
+           strcpy(machine_,"ARM");
+           break;
+       default:
+           strcpy(machine_,"Unknown");
+    }
+
+ostype = new char[strlen(ostype_)+1];
+strcpy(ostype,ostype_);
+osname = new char[strlen(osname_)+1];
+strcpy(osname,osname_);
+osrelease = new char[strlen(osrelease_)+1];
+strcpy(osrelease,osrelease_);
+machine = new char[strlen(machine_)+1];
+strcpy(machine,machine_);
+
 }
 #else
 #include <cstdlib>
