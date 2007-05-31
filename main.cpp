@@ -7,7 +7,7 @@ BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
 File    : main.cpp
 License : Zlib
 --------------------------------------------------------------------------------
-Copyright (c) 2007 André van Schoubroec]
+Copyright (c) 2007 André van Schoubroeck
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
@@ -85,7 +85,15 @@ vector <ircchannel*> channels;
 char *botnick;
 SOCKET sServer;
 bool joined;
-	//--------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+void joinchannel(char *channel){
+	char temp[500];
+	sprintf(temp,"JOIN %s\xd\xa",channel);
+	send (sServer,temp,strlen(temp),0);
+}
+//------------------------------------------------------------------------------
+
 void getChannelNick (int &a, int &b, char *channel, char *nick)
 {
 	//--------------------------------------------------------------------------
@@ -99,6 +107,102 @@ void getChannelNick (int &a, int &b, char *channel, char *nick)
 	//--------------------------------------------------------------------------
 		} else b=-1; 
 	} else a=-1;
+}
+//------------------------------------------------------------------------------
+
+bool isop(char *channel, char *nick){	
+	int a,b,c;
+	bool result=false;
+	getChannelNick(a,b,channel,nick);
+	if ( a != -1) { 
+		if ( b != -1 ) {
+			for ( c = 0; c < strlen(channels[a]->users[b]->mode);){
+				// ~(q)&(a)@(o)%(h)
+				result = result || (channels[a]->users[b]->mode[c]== '~') 
+								|| (channels[a]->users[b]->mode[c]== '&')
+								|| (channels[a]->users[b]->mode[c]== '@') 
+								|| (channels[a]->users[b]->mode[c]== '%');
+				c++; // staat hier vanwege mode[c]
+			}
+		}
+	}
+    return result;
+}
+//------------------------------------------------------------------------------
+
+bool botisop(char *channel){
+	return isop(channel, botnick);
+}
+//------------------------------------------------------------------------------
+
+bool iscsregged(char *mode){
+	int c;
+	bool result=false;
+	for ( c = 0; c < strlen(mode);){
+		result = result || (mode[c]== 'r');
+		c++; // staat hier vanwege mode[c]
+	}
+return result;
+}
+
+bool iscsregged(char *channel,char *nick){	
+	printf("iscsregged\n");
+	int a,b,c;
+	bool result=false;
+	getChannelNick(a,b,channel,nick);
+	if ( a != -1) { 
+		if ( b != -1 ) {
+			for ( c = 0; c < strlen(channels[a]->users[b]->mode);){
+				
+				result = result || (channels[a]->users[b]->mode[c]== 'r');
+				c++; // staat hier vanwege mode[c]
+			}
+		}else printf("nick not found\n");
+	}else printf("channel not found\n");
+    return result;
+}
+
+//------------------------------------------------------------------------------
+
+
+void spltstr(char *data, int &NrParam, char **Param,char nrspace){
+    
+    char teller=0;
+    char *Ptr = data; 
+    bool done=false;
+    NrParam = 0;
+    Param[NrParam] = data;
+    while(*Ptr != 0){
+		if(*Ptr == 0x0A) *Ptr = 0x00;
+        if(*Ptr == 0x0D) *Ptr = 0x00;
+        if(*Ptr == 0x20 && !done){
+			*Ptr = 0x00;
+            NrParam++;Param[NrParam] = Ptr + 1;
+			
+		}
+        if(*Ptr == ':' && NrParam > 2 && !done) { 
+			done=true;
+      		Param[NrParam] = Ptr + 1; 
+		}
+        Ptr++;
+	}
+    done = false;
+
+}
+//------------------------------------------------------------------------------
+
+void splitnickuser ( char *Ptr, char *&nick, char *&mask ){
+	Ptr++;
+	nick=Ptr;
+	bool done=false;
+	while(*Ptr != 0 && !done) {
+		if(*Ptr == '!'){
+			*Ptr = 0;
+    		mask = Ptr+1;
+    		done = true;
+		}
+		Ptr++;
+	}
 }
 //------------------------------------------------------------------------------
 
@@ -124,11 +228,25 @@ void sendNOTICE(char *target, char *message){
 }
 //------------------------------------------------------------------------------
 
-char userlevel (char *host){
+char userlevel (char *mode, char *channel, char *nick, char *host){
+//test
+	
+		
 	if (strcmp(host,"Indre-7A2D8200.xs4all.nl")==0)
-		return 100;
+		return 100; //thuis indreanet
 	if (strcmp(host,"Chat4all-51B52190.xs4all.nl")==0)
-		return 100;
+		return 100; //thuis chat4all
+	
+	if (strcmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
+		return 100; // school indeanet
+	if (strcmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
+		return 100; // school chat4all
+	
+	if (iscsregged(mode)) return 25;
+	
+
+	//
+	
 	// --> hard coded for now .... will be in file later
 	return 0;
 }
@@ -176,7 +294,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 				//strcpy (newuser->lastsaid,"joined");
 				newuser->oldnick=NULL;
 				newuser->lines = 0;
-				newuser->userlevel=userlevel(host);
+				newuser->userlevel=userlevel(mode,channel,nick,host);
 				channels[channels.size()-1]->users.push_back(newuser);	
 			}
 		}
@@ -202,7 +320,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 			newuser->lines = 0;		
 			newuser->oldnick=NULL;
 			newuser->lasttype = 'J';
-			newuser->userlevel=userlevel(host);
+			newuser->userlevel=userlevel(mode,channel,nick,host);
 			
 			ircchannel *newchannel;
 			newchannel = new ircchannel;
@@ -214,48 +332,6 @@ void userlist (char *channel, char *user, char *host, char *server,
 		}
 //	printf("%s\n",channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->nick);
 }	
-//------------------------------------------------------------------------------
-bool isop(char *channel, char *nick){	
-	int a,b,c;
-	bool result=false;
-	getChannelNick(a,b,channel,nick);
-	if ( a != -1) { 
-		if ( b != -1 ) {
-			for ( c = 0; c < strlen(channels[a]->users[b]->mode);){
-				// ~(q)&(a)@(o)%(h)
-				result = result || (channels[a]->users[b]->mode[c]== '~') 
-								|| (channels[a]->users[b]->mode[c]== '&')
-								|| (channels[a]->users[b]->mode[c]== '@') 
-								|| (channels[a]->users[b]->mode[c]== '%');
-				c++; // staat hier vanwege mode[c]
-			}
-		}
-	}
-    return result;
-}
-//------------------------------------------------------------------------------
-
-bool botisop(char *channel){
-	return isop(channel, botnick);
-}
-//------------------------------------------------------------------------------
-
-bool iscsregged(char *channel, char *nick){	
-	int a,b,c;
-	bool result=false;
-	getChannelNick(a,b,channel,nick);
-	if ( a != -1) { 
-		if ( b != -1 ) {
-			for ( c = 0; c < strlen(channels[a]->users[b]->mode);){
-				
-				result = result || (channels[a]->users[b]->mode[c]== 'r');
-				c++; // staat hier vanwege mode[c]
-			}
-		}
-	}
-    return result;
-}
-
 //------------------------------------------------------------------------------
 
 void setmode(char *channel, char *nick, char *mode){
@@ -276,42 +352,33 @@ void setmode(char *channel, char *nick, char *mode){
 void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	int a,b;
 	getChannelNick(a,b,channel,nick); 	
+	
+	
+	
 			
 	if (strncmp("!test",data,5)==0){
 		char temp[128]="testing, the current botnick is ";
 		strcpy(temp+strlen(temp),botnick);
 		sendPRIVMSG(channel,temp);
-		
-		//char temp[128]="PRIVMSG ";
-		//strcpy(temp+8,channel);
-		//strcpy(temp+strlen(temp)," Botnick ");
-		//strcpy(temp+strlen(temp),botnick);
-		//send (sServer,temp,strlen(temp),0);
-		//send (sServer,"\xD\xA",2,0);
+
 		return;
 	}
 	if (strncmp("!os",data,3)==0){
 		char *ostype,*osrelease,*osname,*machine;
 		getOSinfo(ostype,osrelease,osname,machine);
-		
-		char temp[999]="PRIVMSG ";
-		strcpy(temp+8,channel);
-		strcpy(temp+strlen(temp)," ");
-		strcpy(temp+strlen(temp),ostype);
-		strcpy(temp+strlen(temp)," ");
-		strcpy(temp+strlen(temp),osrelease);
-				strcpy(temp+strlen(temp)," ");
-		strcpy(temp+strlen(temp),machine);
-		send (sServer,temp,strlen(temp),0);
-		send (sServer,"\xD\xA",2,0);
+		char temp[128]="PRIVMSG ";
+		sprintf(temp,"%s (%s %s %s)",osname, ostype, osrelease, machine);
+		sendPRIVMSG(channel,temp);
 		delete ostype; delete osrelease; delete osname; delete machine;
 		return;
 	}	
 	
 		if (strncmp("!seen",data,5)==0){
+			char *P[3];	int NrP;
+			spltstr(data,NrP,P,2);
 	    a=-1;b=-1;
-			printf("user:%s channel:%s\n",data+6,channel);
-		if (data+5!=NULL) getChannelNick(a,b,channel,data+6);
+			printf("user:%s channel:%s\n",P[1],channel);
+		if (data+5!=NULL) getChannelNick(a,b,channel,P[1]);
 			if ( a != -1){
 				if ( b != -1){
 					char temp[128];
@@ -322,29 +389,29 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 			
 			switch (channels[a]->users[b]->lasttype){
 			case 'J' : 
-				sprintf(temp,"%s kwam toen binnen", data+6);
+				sprintf(temp,"%s kwam toen binnen", P[1]);
 				break;
 			case 'T' : 
 				sprintf(temp,"%s zei toen %s",
-				       data+6,channels[a]->users[b]->lastsaid) ;
+				       P[1],channels[a]->users[b]->lastsaid) ;
 				break;
 			case 'A' : 
 				sprintf(temp,"%s deed toen * %s %s *",
-				       data+6,channel,channels[a]->users[b]->lastsaid) ;
+				       P[1],channel,channels[a]->users[b]->lastsaid) ;
 				break;
 			case 'P' : 
 				sprintf(temp,"%s ging toen weg (%s)",
-			    data+6,channels[a]->users[b]->lastsaid);
+			    P[1],channels[a]->users[b]->lastsaid);
 				break;
 			case 'Q' : 
 				sprintf(temp,"%s ging toen weg (%s)",
-			    data+6,channels[a]->users[b]->lastsaid);
+			    P[1],channels[a]->users[b]->lastsaid);
 				break;}
 				sendPRIVMSG(channel,temp);
 			}else 
 			{
 				char temp[128];
-				sprintf(temp,"I\'m sorry, I haven\'t seen %s",data+6);
+				sprintf(temp,"I\'m sorry, I haven\'t seen %s",P[1]);
 				sendPRIVMSG(channel,temp);
 			}
 			
@@ -352,7 +419,11 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 		return;
 	}		
 	
-
+	if (strncmp("!ul",data,3)==0){
+		char temp[128];
+		sprintf(temp,"Your userlevel is %d",channels[a]->users[b]->userlevel);
+		sendPRIVMSG(channel,temp);
+	}
 	if (channels[a]->users[b]->userlevel > 50 ){
 		if (strncmp("!nick",data,5)==0){
 			char temp[128]="NICK ";
@@ -361,10 +432,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 			send (sServer,"\xD\xA",2,0);
 		}
 		if (strncmp("!join",data,5)==0){
-			char temp[128]="JOIN ";
-			strcpy(temp+5,data+6);
-			send (sServer,temp,strlen(temp),0);
-			send (sServer,"\xD\xA",2,0);
+			joinchannel(data+6);
 		}
 	}
 }
@@ -492,29 +560,14 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 void irc_received(char *data){
     int NrParam;
     char *Param[25];
-    char *Ptr = data; 
-    bool done=false;
-    NrParam = 0;
-    Param[NrParam] = data;
-    while(*Ptr != 0){
-		if(*Ptr == 0x0A) *Ptr = 0x00;
-        if(*Ptr == 0x0D) *Ptr = 0x00;
-        if(*Ptr == 0x20 && !done){
-			*Ptr = 0x00;
-            NrParam++;Param[NrParam] = Ptr + 1;
-		}
-        if(*Ptr == ':' && NrParam > 2 && !done) { 
-			done=true;
-      		Param[NrParam] = Ptr + 1; 
-		}
-        Ptr++;
-	}
-    done = false;
+	
+   spltstr(data,NrParam,Param,24);
 
   //debug code//
-  //for ( int a = 0 ; a <= NrParam ; printf("Param %d of %d : (%d) %s\n",a,NrParam,strlen(Param[a]),Param[a]),a++);
-  //printf("\n");
+  //  for ( int a = 0 ; a <= NrParam ; printf("Param %d of %d : (%d) %s\n",a,NrParam,strlen(Param[a]),Param[a]),a++);
+  //  printf("\n");
   //debug code//
+
 
   	if (strlen(Param[0])==4) { 
 		if (strncmp (Param[0],"PING",4) == 0){
@@ -531,21 +584,13 @@ void irc_received(char *data){
 			strncmp (Param[1],"QUIT",4) == 0 ||
 		    strncmp (Param[1],"NICK",4) == 0 ){ 
 			//if (NrParam == 2 ) {  
-				done = false; // dit is de bug?
+				bool done = false; 
 				{
 				char* nick;
           		char* mask=NULL;
-		  		//char* channel=Param[2]+1;
-          		nick = Param[0]+1;
-          		Ptr = nick;
-          		while(*Ptr != 0 && !done) {
-					if(*Ptr == '!'){
-						*Ptr = 0;
-              			mask = Ptr+1;
-              			done = true;
-					}
-            		Ptr++;
-				}
+
+				splitnickuser(Param[0],nick,mask);	
+					
         		// --- kies hier ---- 
 				if (strncmp (Param[1],"JOIN",4) == 0) 
 					verwerk(JOIN,nick,mask,Param[2]+1,NULL);
@@ -566,16 +611,8 @@ void irc_received(char *data){
 			if (NrParam == 3 ) { 
           		char* nick;
           		char* mask=NULL;
-          		nick = Param[0]+1;
-          		Ptr = nick;
-          		while(*Ptr != 0 && !done) {
-            		if(*Ptr == '!'){
-              			*Ptr = 0;
-              			mask = Ptr+1;
-              			done = true;
-					}
-            		Ptr++;
-				}
+          		splitnickuser(Param[0],nick,mask);	
+				
                 if (Param[3][0] == 1){ // CTCP or ACTION
             		if (strlen(Param[3])>7){
 						if (strncmp (Param[3],"\x01\x41\x43TION",7) == 0){
@@ -586,6 +623,7 @@ void irc_received(char *data){
 							verwerk(AMES,nick,mask,Param[2],Param[3]+8);
 						}
 					}
+					
 					if (strlen(Param[3])==9){
               			if (strncmp (Param[3],"\x01VERSION\x01",9) == 0){
                 			printf("CTCP VERSION reveived from %s\n",nick);
@@ -610,19 +648,9 @@ void irc_received(char *data){
 			printf("Login Successfull\n");
   		}
 		if (strncmp (Param[1],"352",3) == 0){
-		
-			//userlist 
+
 			if (NrParam == 9){
-				//printf("%s %s\n",Param[3],Param[7]);
-				// hoe gaan we dit aanpakken
-				// 2 = mynick
-				// 3 = channel
-				// 4 = username
-				// 5 = hostmask
-				// 6 = server
-				// 7 = nick van persoon
-				// 8 = mode
-				// 9 = realname
+
 				userlist(Param[3],Param[4],Param[5],Param[6],
 				         Param[7],Param[8],Param[9]);
 			}
@@ -631,11 +659,11 @@ void irc_received(char *data){
 		if (strncmp (Param[1],"376",3) == 0){
        		printf("Ready to join\n");
        		#ifdef indreanet    
-			//send (sServer,"JOIN #bscp-testing\xD\xA",20,0);
-			send (sServer,"JOIN #test\xD\xA",12,0);
+			joinchannel("#bscp-testing");
+			joinchannel("#test");
 			#else
-			//send (sServer,"JOIN #test\xD\xA",12,0);
-			send (sServer,"JOIN #blaatschaap\xD\xA",19,0); //moet ik wel /xd/xa 
+			joinchannel("#blaatschaap");
+			joinchannel("#test");
 			#endif
 		}
 		if (strncmp (Param[1],"433",3) == 0){
@@ -705,7 +733,7 @@ int login ()
 // hoe effeciënt met de sockets om te gaan??
 	 //goto test2;
 test:
-    recv(sServer, temp+received_size, 1, 0);
+    if (recv(sServer, temp+received_size, 1, 0)==-1)return 1; //test dit disconnected detection.
     received_size++;
     if (temp[received_size-1] == 0x0A  ) { 
 		// dit werkt dus met UNIX en DOS regeleinden, 

@@ -239,17 +239,10 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
 	machine[strlen(machine)-1]=0;
 	osname= new char [strlen(ostype) + strlen(osrelease) + 2];
     strcpy(osname,ostype);
-	machine[strlen(machine)+1]=0x00;
-	machine[strlen(machine)]=0x20;
+	osname[strlen(osname)+1]=0x00;
+	osname[strlen(osname)]=0x20;
 	strcpy(osname+strlen(osname),osrelease);
 	
 	
-	//printf("OSTYPE = %s\n",ostype);
-	//printf("OSRELEASE = %s\n",osrelease);
-	//printf("MACHINE = %s\n",machine);
-	
-	//delete ostype;
-	//delete osrelease;
-	//delete machine;
 }
 #endif
