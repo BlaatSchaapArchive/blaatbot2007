@@ -1,7 +1,7 @@
 [Project]
 FileName=bscp-cbot.dev
 Name=bscp-cbot
-UnitCount=1
+UnitCount=2
 Type=1
 Ver=1
 ObjFiles=
@@ -56,4 +56,14 @@ OriginalFilename=
 ProductName=
 ProductVersion=
 AutoIncBuildNr=0
+
+[Unit2]
+FileName=osinfo.cpp
+CompileCpp=1
+Folder=bscp-cbot
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
 

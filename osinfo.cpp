@@ -43,10 +43,10 @@ TODO :
 
 void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
 
-char ostype_[128];
-char osname_[128];
-char osrelease_[128];
-char machine_[128];
+char ostype_[128]="Unknown";
+char osname_[128]="Unknown";
+char osrelease_[128]="Unknown";
+char machine_[128]="Unknown";
 
 
     OSVERSIONINFO winver;
@@ -84,17 +84,17 @@ if ( (winver.dwMajorVersion < 5) &&
      (winver.dwPlatformId  == 2) ){
      sprintf(osname_,"Windows NT %s %s",osrelease,winver.szCSDVersion);
 }
-if ( (winver.dwMajorVersion  < 5) &&
+if ( (winver.dwMajorVersion == 5) &&
      (winver.dwMinorVersion == 0) &&
      (winver.dwPlatformId   == 2) ){
      sprintf(osname_,"Windows 2000 %s",winver.szCSDVersion);
 }
-if ( (winver.dwMajorVersion  < 5) &&
+if ( (winver.dwMajorVersion == 5) &&
      (winver.dwMinorVersion == 1) &&
      (winver.dwPlatformId   == 2) ){
      sprintf(osname_,"Windows XP %s",winver.szCSDVersion);
 }
-if ( (winver.dwMajorVersion  < 5) &&
+if ( (winver.dwMajorVersion == 5) &&
      (winver.dwMinorVersion == 2) &&
      (winver.dwPlatformId   == 2) ){
      if (si.wProcessorArchitecture)
@@ -104,7 +104,7 @@ if ( (winver.dwMajorVersion  < 5) &&
      sprintf(osname_,"Windows 2003 %s",winver.szCSDVersion);
 
 }
-if ( (winver.dwMajorVersion  < 6) &&
+if ( (winver.dwMajorVersion == 6) &&
      (winver.dwMinorVersion == 0) &&
      (winver.dwPlatformId   == 2) ){
      sprintf(osname_,"Windows Vista %s",winver.szCSDVersion);
