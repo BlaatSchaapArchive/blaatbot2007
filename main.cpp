@@ -570,8 +570,8 @@ void irc_received(char *data){
    spltstr(data,NrParam,Param,24);
 
   //debug code//
-  //  for ( int a = 0 ; a <= NrParam ; printf("Param %d of %d : (%d) %s\n",a,NrParam,strlen(Param[a]),Param[a]),a++);
-  //  printf("\n");
+    for ( int a = 0 ; a <= NrParam ; printf("Param %d of %d : (%d) %s\n",a,NrParam,strlen(Param[a]),Param[a]),a++);
+    printf("\n");
   //debug code//
 
 
@@ -676,7 +676,7 @@ void irc_received(char *data){
 		  		nick[strlen(nick)]='_';	  
 		  		printf("Retrying with %s ...\n",nick);	      
                 sendNICK(nick);
-		  		//delete botnick;
+		  		delete botnick;
 				//botnick = new char[1+strlen(nick)];
                 //strcpy(botnick,nick);
 				//char temp[25]="NICK ";      
@@ -753,7 +753,7 @@ int main(int argc, char *argv[])
 #endif	
 	botnick = new char[1+sizeof("bscp-test")];
 	strcpy(botnick,"bscp-test");
-    	login ();
+    login ();
 	receivedata();
     return EXIT_SUCCESS;
 }
