@@ -112,21 +112,20 @@ void getChannelNick (int &a, int &b, char *channel, char *nick)
 
 bool isop(char *channel, char *nick){	
 	int a,b,c;
-	bool result=false;
 	getChannelNick(a,b,channel,nick);
 	if ( a != -1) { 
 		if ( b != -1 ) {
 			for ( c = 0; c < strlen(channels[a]->users[b]->mode);){
 				// ~(q)&(a)@(o)%(h)
-				result = result || (channels[a]->users[b]->mode[c]== '~') 
-								|| (channels[a]->users[b]->mode[c]== '&')
-								|| (channels[a]->users[b]->mode[c]== '@') 
-								|| (channels[a]->users[b]->mode[c]== '%');
+				if (channels[a]->users[b]->mode[c]== '~') return true;
+				if (channels[a]->users[b]->mode[c]== '&') return true;
+				if (channels[a]->users[b]->mode[c]== '@') return true;
+				if (channels[a]->users[b]->mode[c]== '%') return true;
 				c++; // staat hier vanwege mode[c]
 			}
 		}
 	}
-    return result;
+    return false;
 }
 //------------------------------------------------------------------------------
 
@@ -146,7 +145,6 @@ return result;
 }
 
 bool iscsregged(char *channel,char *nick){	
-	printf("iscsregged\n");
 	int a,b,c;
 	bool result=false;
 	getChannelNick(a,b,channel,nick);
@@ -204,6 +202,13 @@ void splitnickuser ( char *Ptr, char *&nick, char *&mask ){
 		Ptr++;
 	}
 }
+
+void sendNICK(char *nick){
+     char temp[128];
+     sprintf(temp,"NICK %s\xd\xa",nick);
+     send (sServer,temp,strlen(temp),0);     
+}
+
 //------------------------------------------------------------------------------
 
 void sendPRIVMSG(char *target, char *message){
@@ -213,18 +218,17 @@ void sendPRIVMSG(char *target, char *message){
 }
 //------------------------------------------------------------------------------
 
-void sendACTION(char *target, char *message){
-	char temp[500];
-	sprintf(temp,"PRIVMSG %s \x01\x41\x43TION %s\x1\xD\xA",target,message);	
-	send (sServer,temp,strlen(temp),0);
-}
-//------------------------------------------------------------------------------
-
 void sendNOTICE(char *target, char *message){
 	char temp[500];
 	sprintf(temp,"NOTICE %s %s\xD\xA",target,message);	
 	send (sServer,temp,strlen(temp),0);
+}
+//------------------------------------------------------------------------------
 
+void sendACTION(char *target, char *message){
+	char temp[500];
+	sprintf(temp,"PRIVMSG %s \x01\x41\x43TION %s\x1\xD\xA",target,message);	
+	send (sServer,temp,strlen(temp),0);
 }
 //------------------------------------------------------------------------------
 
@@ -426,13 +430,15 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	}
 	if (channels[a]->users[b]->userlevel > 50 ){
 		if (strncmp("!nick",data,5)==0){
-			char temp[128]="NICK ";
-			strcpy(temp+5,data+6);
-			send (sServer,temp,strlen(temp),0);
-			send (sServer,"\xD\xA",2,0);
-		}
+            char *P[3];	int NrP;
+			spltstr(data,NrP,P,2);
+            sendNICK(P[1]);
+        }
+	
 		if (strncmp("!join",data,5)==0){
-			joinchannel(data+6);
+            char *P[3];	int NrP;
+			spltstr(data,NrP,P,2);
+			joinchannel(P[1]);
 		}
 	}
 }
@@ -574,7 +580,7 @@ void irc_received(char *data){
 			Param[0][1]='O';
       		Param[0][4]=' ';
 	  		send (sServer,Param[0], strlen(Param[0]), 0);
-			send (sServer,"\x0D\x0A",2,0);
+			send (sServer,"\xD\xA",2,0);
 		}
 	}
   
@@ -627,11 +633,7 @@ void irc_received(char *data){
 					if (strlen(Param[3])==9){
               			if (strncmp (Param[3],"\x01VERSION\x01",9) == 0){
                 			printf("CTCP VERSION reveived from %s\n",nick);
-							char temp[128]="NOTICE ";
-                			strncpy(temp+7,nick, strlen(nick));
-                			strncpy(temp+7+strlen(nick),\
-					" :\x01VERSION bscp-bot pre-alpha testing\x01\x0D\x0A",40);
-                			send (sServer,temp, strlen(temp), 0);
+                            sendNOTICE(nick,"\x1VERSION bscp-bot pre-alpha testing\x1");
 						}
 					}
 				}
@@ -673,13 +675,14 @@ void irc_received(char *data){
       	  		nick[strlen(nick)+1]=0x00;
 		  		nick[strlen(nick)]='_';	  
 		  		printf("Retrying with %s ...\n",nick);	      
-		  		delete botnick;
-				botnick = new char[1+strlen(nick)];
-				strcpy(botnick,nick);
-				char temp[25]="NICK ";      
-		  		strcpy (temp+5,nick);
-          		strcpy (temp+(strlen(temp)),"\xD\xA");		  
-	      		send (sServer,temp,strlen(temp),0);  
+                sendNICK(nick);
+		  		//delete botnick;
+				//botnick = new char[1+strlen(nick)];
+                //strcpy(botnick,nick);
+				//char temp[25]="NICK ";      
+		  		//strcpy (temp+5,nick);
+          		//strcpy (temp+(strlen(temp)),"\xD\xA");		  
+	      		//send (sServer,temp,strlen(temp),0);  
 	  		}
 	
   		}
@@ -717,47 +720,27 @@ printf("Connecting to %s:%d...\n",ip,port);
   return 0;
 }
 //------------------------------------------------------------------------------
-int login ()
+void login ()
 {
 	printf("Connected... logging in as %s ...\n",botnick);
-    char temp[9999]="NICK ";
-    strncpy(temp+5,botnick, strlen(botnick));
-    strncpy(temp+5+strlen(botnick),"\x0D\x0A",3);
+    char temp[128];
+    sendNICK(botnick);
+    sprintf(temp,"USER bscp_cbot bscp_host bscp_server :BlaatSchaap Coding Projects 2007 IRC BOT\xd\xa");
     send (sServer,temp, strlen(temp), 0);
-    strcpy(temp,"USER bscp bscp bscp :bcsp\x0D\x0A");
-    send (sServer,temp, strlen(temp), 0);
-    int received_size=0;
+}
 
-	
-	
-// hoe effeciënt met de sockets om te gaan??
-	 //goto test2;
-test:
-    if (recv(sServer, temp+received_size, 1, 0)==-1)return 1; //test dit disconnected detection.
-    received_size++;
-    if (temp[received_size-1] == 0x0A  ) { 
-		// dit werkt dus met UNIX en DOS regeleinden, 
-		// maar MAC regeleinden \x0D dus niet....
-		// en zo lijkt het niet toegestaan te zijn
-		// te scannen naar een \0 om het einde
-		// van het bericht te vinden
-		// en de hele buffer ontvangen lijkt ook geen optie (zie code onder)
-		// dus hoe kan dit het efficiënst mogelijk opgelost worden.
-		// lijkt mij voorlopen voor IRC geen probleem, maar er is een
-		// protocol dat bij sommige berichten geen regeleinden meestuurt.
-		// dacht dat dat hij het dAmn protocol zo was....
-		temp[received_size] = 0x00;
-		irc_received(temp);
-      	received_size=0;
+void receivedata(){
+    char temp[666];
+	int received_size=0;
+	while(1){
+        if (!(recv(sServer, temp+received_size, 1, 0))) return; //test dit disconnected detection.
+        received_size++;
+        if (temp[received_size-1] == 0x0A  ) { 
+		    temp[received_size] = 0x00;
+		    irc_received(temp);
+      	    received_size=0;
+        }
     }
-    goto test; 
-
-
-test2:	
-	received_size=recv(sServer, temp, sizeof(temp), 0); 
-	printf("r:  %s\n",temp);
-	irc_received(temp);
-	goto test2;
 }
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[])
@@ -771,6 +754,7 @@ int main(int argc, char *argv[])
 	botnick = new char[1+sizeof("bscp-test")];
 	strcpy(botnick,"bscp-test");
     	login ();
+	receivedata();
     return EXIT_SUCCESS;
 }
 //------------------------------------------------------------------------------
