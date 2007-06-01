@@ -1,4 +1,5 @@
 #define indreanet
+//#define loud
 
 /*
 BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
@@ -29,13 +30,10 @@ freely, subject to the following restrictions:
     distribution.
 --------------------------------------------------------------------------------
 
-TODO :
-     *  het scheiden van de params in een aparte functie zetten.
-     
+    
             '438' = nick niet gewijzigd 'change too fast'
             '432' = nick niet gewijzigd 'illegal chars'
                 
-
 
 
 */
@@ -56,7 +54,6 @@ TODO :
 #include <iostream>
 #include <time.h> 
 #include <stdio.h>
-//#include <string>
 #include <vector>
 #include "osinfo.h"
 using namespace std;
@@ -84,7 +81,8 @@ struct ircchannel{char *channel; vector <ircuser *> users; FILE *logfile;};
 vector <ircchannel*> channels;
 char *botnick;
 SOCKET sServer;
-bool joined;
+char *ostype,*osrelease,*osname,*machine;
+//bool joined;
 //------------------------------------------------------------------------------
 
 void joinchannel(char *channel){
@@ -159,9 +157,7 @@ bool iscsregged(char *channel,char *nick){
 	}else printf("channel not found\n");
     return result;
 }
-
 //------------------------------------------------------------------------------
-
 
 void spltstr(char *data, int &NrParam, char **Param,char nrspace){
     
@@ -171,19 +167,18 @@ void spltstr(char *data, int &NrParam, char **Param,char nrspace){
     NrParam = 0;
     Param[NrParam] = data;
     while(*Ptr != 0){
-		if(*Ptr == 0x0A) *Ptr = 0x00;
+	if(*Ptr == 0x0A) *Ptr = 0x00;
         if(*Ptr == 0x0D) *Ptr = 0x00;
         if(*Ptr == 0x20 && !done){
-			*Ptr = 0x00;
+	    *Ptr = 0x00;
             NrParam++;Param[NrParam] = Ptr + 1;
-			
-		}
-        if(*Ptr == ':' && NrParam > 2 && !done) { 
-			done=true;
-      		Param[NrParam] = Ptr + 1; 
-		}
-        Ptr++;
 	}
+        if(*Ptr == ':' && NrParam > 2 && !done) { 
+            done=true;
+     	Param[NrParam] = Ptr + 1; 
+	}
+        Ptr++;
+    }
     done = false;
 
 }
@@ -295,60 +290,57 @@ void userlist (char *channel, char *user, char *host, char *server,
 				newuser->lasttime = time(NULL);
 				newuser->lastsaid = NULL;
 				newuser->lasttype = 'J';
-				//strcpy (newuser->lastsaid,"joined");
 				newuser->oldnick=NULL;
 				newuser->lines = 0;
 				newuser->userlevel=userlevel(mode,channel,nick,host);
-				channels[channels.size()-1]->users.push_back(newuser);	
+				// wth???? // channels[channels.size()-1]->users.push_back(newuser);
+				channels[a]->users.push_back(newuser);	
+				fprintf(channels[a]->logfile,"%s joined %s\n",nick,channel);
+					
+	
+				
 			}
-		}
-		else{//channel bestaat niet
+		}else{//channel bestaat niet
 		
-			ircuser *newuser;
-			newuser = new ircuser;
+		ircuser *newuser;
+		newuser = new ircuser;
 			
-			newuser->user = new char[1+strlen(user)];
-			strcpy (newuser->user,user);
-			newuser->host = new char[1+strlen(host)];
-			strcpy (newuser->host,host);
-			newuser->server = new char[1+strlen(server)];
-			strcpy (newuser->server,server);
-			newuser->nick = new char[1+strlen(nick)];
-			strcpy (newuser->nick,nick);
-			newuser->mode = new char[1+strlen(mode)];
-			strcpy (newuser->mode,mode);
-			newuser->realname = new char[1+strlen(realname)];
-			strcpy (newuser->realname,realname);
-			newuser->lasttime = time(NULL);
-			newuser->lastsaid = NULL;
-			newuser->lines = 0;		
-			newuser->oldnick=NULL;
-			newuser->lasttype = 'J';
-			newuser->userlevel=userlevel(mode,channel,nick,host);
+		newuser->user = new char[1+strlen(user)];
+		strcpy (newuser->user,user);
+		newuser->host = new char[1+strlen(host)];
+		strcpy (newuser->host,host);
+		newuser->server = new char[1+strlen(server)];
+		strcpy (newuser->server,server);
+		newuser->nick = new char[1+strlen(nick)];
+		strcpy (newuser->nick,nick);
+		newuser->mode = new char[1+strlen(mode)];
+		strcpy (newuser->mode,mode);
+		newuser->realname = new char[1+strlen(realname)];
+		strcpy (newuser->realname,realname);
+		newuser->lasttime = time(NULL);
+		newuser->lastsaid = NULL;
+		newuser->lines = 0;		
+		newuser->oldnick=NULL;
+		newuser->lasttype = 'J';
+		newuser->userlevel=userlevel(mode,channel,nick,host);
 			
-			ircchannel *newchannel;
-			newchannel = new ircchannel;
-			newchannel->logfile = fopen (channel,"a");
-    		newchannel->channel = new char[1+strlen(channel)];
-			strcpy (newchannel->channel,channel);
-			channels.push_back(newchannel);
-			channels[channels.size()-1]->users.push_back(newuser); 
-		}
-//	printf("%s\n",channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->nick);
+		ircchannel *newchannel;
+		newchannel = new ircchannel;
+		newchannel->logfile = fopen (channel,"a");
+    	newchannel->channel = new char[1+strlen(channel)];
+		strcpy (newchannel->channel,channel);
+		channels.push_back(newchannel);
+		channels[channels.size()-1]->users.push_back(newuser); 
+		fprintf(newchannel->logfile,"%s joined %s\n",nick,channel);
+	}
 }	
 //------------------------------------------------------------------------------
 
 void setmode(char *channel, char *nick, char *mode){
 	if (botisop(channel)) {
-		char temp[500]="MODE ";
-		strcpy (temp+5,channel);
-		strcpy (temp+strlen(temp)," ");
-		strcpy (temp+strlen(temp),mode);
-		strcpy (temp+strlen(temp)," ");
-		strcpy (temp+strlen(temp),nick);
-		strcpy (temp+strlen(temp),"\xD\xA");
+		char temp[128];
+		sprintf(temp,"MODE %s %s %s\xd\xa",channel,mode,nick);
 		send (sServer,temp,strlen(temp),0);
-		//printf("debug: %s\n",temp);
 	}
 }
 //------------------------------------------------------------------------------
@@ -356,9 +348,6 @@ void setmode(char *channel, char *nick, char *mode){
 void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	int a,b;
 	getChannelNick(a,b,channel,nick); 	
-	
-	
-	
 			
 	if (strncmp("!test",data,5)==0){
 		char temp[128]="testing, the current botnick is ";
@@ -368,12 +357,9 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 		return;
 	}
 	if (strncmp("!os",data,3)==0){
-		char *ostype,*osrelease,*osname,*machine;
-		getOSinfo(ostype,osrelease,osname,machine);
-		char temp[128]="PRIVMSG ";
+		char temp[128];
 		sprintf(temp,"%s (%s %s %s)",osname, ostype, osrelease, machine);
 		sendPRIVMSG(channel,temp);
-		delete ostype; delete osrelease; delete osname; delete machine;
 		return;
 	}	
 	
@@ -388,7 +374,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 					char temp[128];
 					sprintf(temp,
 		"%s is %d sec geleden voor het laatst actief geweest",
-			   data+6,time(NULL)-channels[a]->users[b]->lasttime);
+			   P[1],time(NULL)-channels[a]->users[b]->lasttime);
 				sendPRIVMSG(channel,temp);
 			
 			switch (channels[a]->users[b]->lasttype){
@@ -569,11 +555,12 @@ void irc_received(char *data){
 	
    spltstr(data,NrParam,Param,24);
 
+   #ifdef loud
   //debug code//
     for ( int a = 0 ; a <= NrParam ; printf("Param %d of %d : (%d) %s\n",a,NrParam,strlen(Param[a]),Param[a]),a++);
     printf("\n");
   //debug code//
-
+   #endif
 
   	if (strlen(Param[0])==4) { 
 		if (strncmp (Param[0],"PING",4) == 0){
@@ -736,25 +723,30 @@ void receivedata(){
         if (!(recv(sServer, temp+received_size, 1, 0))) return; //test dit disconnected detection.
         received_size++;
         if (temp[received_size-1] == 0x0A  ) { 
-		    temp[received_size] = 0x00;
+		    temp[received_size] = 0x00; //unless
 		    irc_received(temp);
       	    received_size=0;
         }
     }
 }
 //------------------------------------------------------------------------------
-int main(int argc, char *argv[])
-{
-    joined = false;
+int main(int argc, char *argv[]){
+    getOSinfo(ostype,osrelease,osname,machine);
+    int port = 6667;
 #ifdef indreanet	
-    if (connect("195.28.165.175",6667)==0) //indreanet
+    char *ip="195.28.165.175";
 #else		
-    if (connect("62.75.201.175",6667)==0) //chat4all  
+    char *ip="62.75.201.175";
 #endif	
+	if (!(connect(ip,port)))
+	{
 	botnick = new char[1+sizeof("bscp-test")];
 	strcpy(botnick,"bscp-test");
-    login ();
-	receivedata();
-    return EXIT_SUCCESS;
+        login ();
+        receivedata();
+	printf("Connection lost\n");
+	delete ostype;delete osrelease;delete osname;delete machine;
+
+	}
 }
 //------------------------------------------------------------------------------
