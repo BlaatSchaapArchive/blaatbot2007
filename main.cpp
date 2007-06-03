@@ -43,6 +43,7 @@ char *ostype,*osrelease,*osname,*machine;
 // for now --> remove after clasification.
 char *botnick;
 #ifdef __WIN32__
+#include <winsock.h>
 SOCKET sServer;
 #else
 int sServer;
