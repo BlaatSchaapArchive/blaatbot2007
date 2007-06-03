@@ -1,3 +1,5 @@
+#define loud
+#define indreanet
 
 #include <cstdlib>
 #include <iostream>
@@ -42,17 +44,18 @@ void joinchannel(char *channel){
 //------------------------------------------------------------------------------
 
 void getChannelNick (int &a, int &b, char *channel, char *nick){
+	printf("getChannelNick\n");
 	//--------------------------------------------------------------------------
 	for ( a = 0; (a < channels.size()) &&
-		                      (strcmp (channel,channels[a]->channel) != 0);a++);
+		                      (strcasecmp (channel,channels[a]->channel) != 0);a++);
 	if ( a < channels.size() ) { // channel bestaat 
 	//--------------------------------------------------------------------------
 		for ( b = 0; ( b < channels[a]->users.size() ) &&
-			              (strcmp(nick,channels[a]->users[b]->nick) != 0); b++); 
+			              (strcasecmp(nick,channels[a]->users[b]->nick) != 0); b++); 
 		if ( b < channels[a]->users.size() ) { // user bestaat 	
 	//--------------------------------------------------------------------------
-		} else b=-1; 
-	} else a=-1;
+		} else { b=-1; printf("Unknown user\n");}
+	} else { a=-1; printf("Unknown channel\n");}
 }
 //------------------------------------------------------------------------------
 
@@ -153,14 +156,14 @@ char userlevel (char *mode, char *channel, char *nick, char *host){
 //test
 	
 		
-	if (strcmp(host,"Indre-7A2D8200.xs4all.nl")==0)
+	if (strcasecmp(host,"Indre-7A2D8200.xs4all.nl")==0)
 		return 100; //thuis indreanet
-	if (strcmp(host,"Chat4all-51B52190.xs4all.nl")==0)
+	if (strcasecmp(host,"Chat4all-51B52190.xs4all.nl")==0)
 		return 100; //thuis chat4all
 	
-	if (strcmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
+	if (strcasecmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
 		return 100; // school indeanet
-	if (strcmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
+	if (strcasecmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
 		return 100; // school chat4all
 	
 	if (iscsregged(mode)) return 25;
@@ -180,7 +183,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 	getChannelNick(a,b,channel,nick);
 	if ( a != -1) { 
 		if ( b != -1 ) {
-				if (strcmp(mode,channels[a]->users[b]->mode )!= 0 ){
+				if (strcasecmp(mode,channels[a]->users[b]->mode )!= 0 ){
 					delete channels[a]->users[b]->mode;
 					channels[a]->users[b]->mode = new char[1+strlen(mode)];
 					strcpy (channels[a]->users[b]->mode,mode);
@@ -190,6 +193,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 					channels[a]->users[b]->lasttype == 'Q' ){
 						channels[a]->users[b]->lasttype = 'J';
 						channels[a]->users[b]->lasttime=time(NULL);
+						channels[a]->users[b]->lines=0;
 				}
 			} 
 			else{ // user bestaat niet in channel;
@@ -268,10 +272,12 @@ void setmode(char *channel, char *nick, char *mode){
 //------------------------------------------------------------------------------
 void verwerk (char type, char *nick, char *host, char *to, char *data)
 {
-	//		if (strcmp(to,botnick)==0){ // verander dit, botnick variable
+	//		if (strcasecmp(to,botnick)==0){ // verander dit, botnick variable
 	int a,b;
 	if (to) 
 		getChannelNick(a,b,to,nick);
+	//if ( a == -1 ) return;
+    //if ( b == -1 ) return;
 	
 	if (type==PMES || type==PAMS || type==NOTP ){
 		if (type==PMES) { //MESSAGE PRIVÉ
@@ -327,7 +333,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 	}
 	
 	if (type==NICK){
-		if (strcmp(botnick,nick)==0){
+		if (strcasecmp(botnick,nick)==0){
 			delete botnick;
 			botnick = new char[1+strlen(data)];
 			strcpy(botnick,data);
@@ -336,7 +342,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		
 		while ( a < channels.size() ){
 			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+					   ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
 			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
 				
 				if (channels[a]->users[b]->oldnick!=NULL) 
@@ -357,8 +363,13 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		if ( a != -1) { 
 			if ( b != -1 ) {
 				channels[a]->users[b]->lasttime=time(NULL);
-				channels[a]->users[b]->lines=0;	
 				channels[a]->users[b]->lasttype='P';
+// --
+				delete channels[a]->users[b]->lastsaid;
+				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
+				strcpy(channels[a]->users[b]->lastsaid,data);
+// --
+				
 			}
 		}
 	}
@@ -369,13 +380,14 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		
 		while ( a < channels.size() ){
 			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+					   ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
 			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				
+// --				
 				channels[a]->users[b]->lasttype='Q';
 				delete channels[a]->users[b]->lastsaid;
 				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
 				strcpy(channels[a]->users[b]->lastsaid,data);
+				
 			}
 			a++;
 		}
@@ -383,11 +395,22 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 }
 //------------------------------------------------------------------------------
 void irc_received(char *data){
+	//quit begin testng
+	char *rawdata = new char[1+strlen(data)];
+	strcpy(rawdata,data);
+
+	/*
+	int NrPq;
+    char *Pq[3];
+	spltstr(rawdata,NrPq,Pq,2); /// uhuh
+    // quit end ... testing 
+    */
+	
+	
     int NrParam;
     char *Param[25];
-	
-   spltstr(data,NrParam,Param,24);
-
+	spltstr(data,NrParam,Param,24);
+   
    #ifdef loud
   //debug code//
     for ( int a = 0 ; a <= NrParam ; printf("Param %d of %d : (%d) %s\n",a,NrParam,strlen(Param[a]),Param[a]),a++);
@@ -424,8 +447,20 @@ void irc_received(char *data){
 					verwerk(PART,nick,mask,Param[2],Param[3]);
 				if (strncmp (Param[1],"NICK",4) == 0) 
 					verwerk(NICK,nick,mask,NULL,Param[2]+1);
-				if (strncmp (Param[1],"QUIT",4) == 0) 
-					verwerk(QUIT,nick,mask,NULL,Param[2]);
+				if (strncmp (Param[1],"QUIT",4) == 0){
+
+					
+					char *Pq[3]; int NrPq;
+					// -- dit heeft invloed op nick ????
+					// -- rawdata is een **kopie** van data
+					// -- waarom heeft deze spltstr invloed op nick
+					// -- 
+					spltstr(rawdata,NrPq,Pq,2);
+					
+					verwerk(QUIT,nick,mask,NULL,Pq[2]+1);
+				}
+				
+				
 				
 
 			}
@@ -460,7 +495,13 @@ void irc_received(char *data){
 		  		else  
 		  		{
 					//printf("<%s> %s\n",nick,Param[3]);			
+					
+				//	if (strcasecmp(Param[2],botnick)== 0)
+				//	verwerk(PMES,nick,mask,Param[2],Param[3]);	
+			//		else
 					verwerk(CMES,nick,mask,Param[2],Param[3]);
+											
+					//verify this
 				}
 			}
 		}
@@ -485,7 +526,7 @@ void irc_received(char *data){
 			joinchannel("#test");
 			#else
 			joinchannel("#blaatschaap");
-			joinchannel("#test");
+			joinchannel("#country-roads");
 			#endif
 		}
 		if (strncmp (Param[1],"433",3) == 0){

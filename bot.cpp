@@ -54,7 +54,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 				break;
 			case 'A' : 
 				sprintf(temp,"%s deed toen * %s %s *",
-				       P[1],channel,channels[a]->users[b]->lastsaid) ;
+				       P[1],P[1],channels[a]->users[b]->lastsaid) ;
 				break;
 			case 'P' : 
 				sprintf(temp,"%s ging toen weg (%s)",
