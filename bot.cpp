@@ -151,7 +151,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		if (type==NOTP) { //NOTICE PRIVÉ
 			//fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
 			//fflush(channels[a]->logfile);
-			if (strcasecmp(nick,"ChanServ")!=0)
+			if (strcasecmp(nick,"NickServ")!=0)
 				sendPRIVMSG(nick,"Private Notices not implemented yet");
 		}
 	}
