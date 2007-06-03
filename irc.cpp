@@ -1,5 +1,5 @@
-#define loud
-#define indreanet
+//#define loud
+//#define indreanet
 
 #include <cstdlib>
 #include <iostream>
@@ -276,24 +276,30 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 	int a,b;
 	if (to) 
 		getChannelNick(a,b,to,nick);
-	//if ( a == -1 ) return;
-    //if ( b == -1 ) return;
+	//
+    
 	
 	if (type==PMES || type==PAMS || type==NOTP ){
 		if (type==PMES) { //MESSAGE PRIVÉ
-			fprintf(channels[a]->logfile,">%s< %s \n",nick,data);			
-			fflush(channels[a]->logfile);
+			//fprintf(channels[a]->logfile,">%s< %s \n",nick,data);			
+			//fflush(channels[a]->logfile);
+			sendPRIVMSG(nick,"PM not implemented yet");
 		}			
 		if (type==PAMS) { //ACTION PRIVÉ
-			fprintf(channels[a]->logfile,">%s %s<\n",nick,data);			
-			fflush(channels[a]->logfile);
+			//fprintf(channels[a]->logfile,">%s %s<\n",nick,data);			
+			//fflush(channels[a]->logfile);
+			sendPRIVMSG(nick,"PM not implemented yet");
 		}				
 		if (type==NOTP) { //NOTICE PRIVÉ
-			fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
-			fflush(channels[a]->logfile);
+			//fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
+			//fflush(channels[a]->logfile);
+			if (strcasecmp(nick,"ChanServ")!=0)
+				sendPRIVMSG(nick,"Private Notices not implemented yet");
 		}
 	}
 	if (type==CMES || type==AMES|| type==NOTC ){
+		if ( a == -1 ) return;
+		if ( b == -1 ) return;
 		delete (channels[a]->users[b]->lastsaid); 
 		channels[a]->users[b]->lasttype=type;
 		channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
@@ -496,9 +502,9 @@ void irc_received(char *data){
 		  		{
 					//printf("<%s> %s\n",nick,Param[3]);			
 					
-				//	if (strcasecmp(Param[2],botnick)== 0)
-				//	verwerk(PMES,nick,mask,Param[2],Param[3]);	
-			//		else
+					if (strcasecmp(Param[2],botnick)== 0)
+					verwerk(PMES,nick,mask,Param[2],Param[3]);	
+					else
 					verwerk(CMES,nick,mask,Param[2],Param[3]);
 											
 					//verify this

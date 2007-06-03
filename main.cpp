@@ -1,5 +1,5 @@
-#define indreanet
-#define loud
+//#define indreanet
+//#define loud
 
 /*
 BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
