@@ -1,3 +1,35 @@
+/*
+BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
+
+
+File    : bot.cpp
+License : Zlib
+--------------------------------------------------------------------------------
+Copyright (c) 2007 André van Schoubroeck
+
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+
+    2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+
+    3. This notice may not be removed or altered from any source
+    distribution.
+--------------------------------------------------------------------------------
+
+
+*/
+
 #include <cstdlib>
 #include <iostream>
 #include <time.h> 
@@ -92,6 +124,136 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
             char *P[3];	int NrP;
 			spltstr(data,NrP,P,2);
 			joinchannel(P[1]);
+		}
+	}
+}
+//------------------------------------------------------------------------------
+void verwerk (char type, char *nick, char *host, char *to, char *data)
+{
+	//		if (strcasecmp(to,botnick)==0){ // verander dit, botnick variable
+	int a,b;
+	if (to) 
+		getChannelNick(a,b,to,nick);
+	//
+    
+	
+	if (type==PMES || type==PAMS || type==NOTP ){
+		if (type==PMES) { //MESSAGE PRIVÉ
+			//fprintf(channels[a]->logfile,">%s< %s \n",nick,data);			
+			//fflush(channels[a]->logfile);
+			sendPRIVMSG(nick,"PM not implemented yet");
+		}			
+		if (type==PAMS) { //ACTION PRIVÉ
+			//fprintf(channels[a]->logfile,">%s %s<\n",nick,data);			
+			//fflush(channels[a]->logfile);
+			sendPRIVMSG(nick,"PM not implemented yet");
+		}				
+		if (type==NOTP) { //NOTICE PRIVÉ
+			//fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
+			//fflush(channels[a]->logfile);
+			if (strcasecmp(nick,"ChanServ")!=0)
+				sendPRIVMSG(nick,"Private Notices not implemented yet");
+		}
+	}
+	if (type==CMES || type==AMES|| type==NOTC ){
+		if ( a == -1 ) return;
+		if ( b == -1 ) return;
+		delete (channels[a]->users[b]->lastsaid); 
+		channels[a]->users[b]->lasttype=type;
+		channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
+	    strcpy(channels[a]->users[b]->lastsaid,data);
+		channels[a]->users[b]->lasttime = time(NULL);
+		channels[a]->users[b]->lines++;
+		if (type==CMES) {//MESSAGE CHANNEL
+			fprintf(channels[a]->logfile,"<%s> %s\n",nick,data);
+			fflush(channels[a]->logfile);
+			channels[a]->users[b]->lasttype = 'T';
+			if (data[0]=='!') botcommand(type,nick, host, to, data);
+		}
+		if (type==AMES) {//ACTION CHANNEL
+			fprintf(channels[a]->logfile,"* %s %s *\n",nick,data);			
+			fflush(channels[a]->logfile);
+			channels[a]->users[b]->lasttype = 'A';
+		}
+		if (type==NOTC) { //NOTICE CHANNEL
+			fprintf(channels[a]->logfile,"-%s- %s\n",nick,data);
+			fflush(channels[a]->logfile);
+			channels[a]->users[b]->lasttype = 'N';
+		}
+		if (channels[a]->users[b]->lines==50) {//maak setbaar
+			setmode(to,nick,"+v");
+		}
+		printf("%s heeft al %d keer iets gezegd.\n",
+			          channels[a]->users[b]->nick,channels[a]->users[b]->lines);
+	}
+		
+	
+	if (type==JOIN){
+		printf("%s joined %s\n",nick, to);
+		char temp[128]="WHO ";
+		strcpy(temp+4,to);
+		send(sServer,temp,strlen(temp),0);
+		send (sServer,"\xD\xA",2,0);
+	}
+	
+	if (type==NICK){
+		if (strcasecmp(botnick,nick)==0){
+			delete botnick;
+			botnick = new char[1+strlen(data)];
+			strcpy(botnick,data);
+		}
+		int a=0,b;
+		
+		while ( a < channels.size() ){
+			for ( b = 0; ( b < channels[a]->users.size() ) && 
+					   ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
+				
+				if (channels[a]->users[b]->oldnick!=NULL) 
+										delete channels[a]->users[b]->oldnick;
+				channels[a]->users[b]->oldnick=channels[a]->users[b]->nick;
+				channels[a]->users[b]->nick= new char[1+strlen(data)];
+				strcpy(channels[a]->users[b]->nick,data);
+			}
+			a++;
+		}
+	}
+	
+	if (type==PART){
+		printf("PART\n");
+		int a,b;
+	
+		getChannelNick(a,b,to,nick);
+		if ( a != -1) { 
+			if ( b != -1 ) {
+				channels[a]->users[b]->lasttime=time(NULL);
+				channels[a]->users[b]->lasttype='P';
+// --
+				delete channels[a]->users[b]->lastsaid;
+				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
+				strcpy(channels[a]->users[b]->lastsaid,data);
+// --
+				
+			}
+		}
+	}
+
+	if (type==QUIT){
+		printf("%s quit\n",nick);
+		int a=0,b;
+		
+		while ( a < channels.size() ){
+			for ( b = 0; ( b < channels[a]->users.size() ) && 
+					   ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
+			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
+// --				
+				channels[a]->users[b]->lasttype='Q';
+				delete channels[a]->users[b]->lastsaid;
+				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
+				strcpy(channels[a]->users[b]->lastsaid,data);
+				
+			}
+			a++;
 		}
 	}
 }

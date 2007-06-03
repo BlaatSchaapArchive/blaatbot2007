@@ -1,6 +1,3 @@
-//#define indreanet
-//#define loud
-
 /*
 BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
 
@@ -29,11 +26,6 @@ freely, subject to the following restrictions:
     3. This notice may not be removed or altered from any source
     distribution.
 --------------------------------------------------------------------------------
-
-    
-            '438' = nick niet gewijzigd 'change too fast'
-            '432' = nick niet gewijzigd 'illegal chars'
-                
 
 
 */
@@ -73,7 +65,7 @@ int main(int argc, char *argv[]){
 	if (!(connect_irc(ip,port)))
 	{
 	botnick = new char[1+sizeof("bscp-test")];
-	strcpy(botnick,"bscp-test");
+	strcpy(botnick,"BlaatBot2007");
         login ();
         receivedata();
 	printf("Connection lost\n");
