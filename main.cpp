@@ -63,10 +63,9 @@ int main(int argc, char *argv[]){
 #else		
     char *ip="62.75.201.175";
 #endif	
-	if (!(connect_irc(ip,port)))
-	{
-	botnick = new char[1+sizeof("bscp-test")];
-	strcpy(botnick,"BlaatBot2007");
+	if (!(connect_irc(ip,port))){                            
+	botnick = new char[1+sizeof("BlaatBot2007")];
+	sprintf(botnick,"BlaatBot2007");
         login ();
         receivedata();
 	printf("Connection lost\n");

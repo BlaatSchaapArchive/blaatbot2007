@@ -43,6 +43,60 @@ using namespace std;
 
 extern vector <ircchannel*> channels;
 //------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------
+
+bool isop(char *channel, char *nick){
+	int a=0,b=0,c=0;
+	getChannelNick(a,b,channel,nick);
+	if ( a != -1) { 
+		if ( b != -1 ) {
+			while ( c < strlen(channels[a]->users[b]->mode) ){
+				// ~(q)&(a)@(o)%(h)
+                if (channels[a]->users[b]->mode[c]== '~') return true;
+				if (channels[a]->users[b]->mode[c]== '&') return true;
+				if (channels[a]->users[b]->mode[c]== '@') return true;
+				if (channels[a]->users[b]->mode[c]== '%') return true;
+				c++; // staat hier vanwege mode[c]
+			} 
+		} 
+	}// printf("\n");
+    return false;
+} 
+//------------------------------------------------------------------------------
+
+bool botisop(char *channel){
+     // naar bot
+	return isop(channel, botnick);
+}
+//------------------------------------------------------------------------------
+
+bool iscsregged(char *mode){
+     // naar bot?
+	int c=0;
+	while ( c < strlen(mode)){
+		if (mode[c]== 'r') return true;
+		c++; 
+	}
+return false;
+}
+
+bool iscsregged(char *channel,char *nick){	
+     //naar bot
+	int a,b,c;
+	bool result=false;
+	getChannelNick(a,b,channel,nick);
+	if ( a != -1) { 
+		if ( b != -1 ) {
+			for ( c = 0; c < strlen(channels[a]->users[b]->mode);){
+				
+				result = result || (channels[a]->users[b]->mode[c]== 'r');
+				c++; // staat hier vanwege mode[c]
+			}
+		}else printf("nick not found\n");
+	}else printf("channel not found\n");
+    return result;
+}
+//------------------------------------------------------------------------------
 
 void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	int a,b;
@@ -72,30 +126,39 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 				if ( b != -1){
 					char temp[128];
 					sprintf(temp,
-		"%s is %d sec geleden voor het laatst actief geweest",
+		"%s was seen %d sec ago",
 			   P[1],time(NULL)-channels[a]->users[b]->lasttime);
 				sendPRIVMSG(channel,temp);
 			
 			switch (channels[a]->users[b]->lasttype){
 			case 'J' : 
-				sprintf(temp,"%s kwam toen binnen", P[1]);
+				sprintf(temp,"%s entered the chatroom", P[1]);
 				break;
 			case 'T' : 
-				sprintf(temp,"%s zei toen %s",
+				sprintf(temp,"%s said %s",
 				       P[1],channels[a]->users[b]->lastsaid) ;
 				break;
 			case 'A' : 
-				sprintf(temp,"%s deed toen * %s %s *",
+				sprintf(temp,"%s did * %s %s *",
 				       P[1],P[1],channels[a]->users[b]->lastsaid) ;
 				break;
 			case 'P' : 
-				sprintf(temp,"%s ging toen weg (%s)",
+				sprintf(temp,"%s parted (%s)",
 			    P[1],channels[a]->users[b]->lastsaid);
 				break;
 			case 'Q' : 
-				sprintf(temp,"%s ging toen weg (%s)",
+				sprintf(temp,"%s quit (%s)",
 			    P[1],channels[a]->users[b]->lastsaid);
-				break;}
+				break;
+			case 'K' : 
+				sprintf(temp,"%s was kicked (%s)",
+			    P[1],channels[a]->users[b]->lastsaid);
+				break;
+			case 'k' : 
+				sprintf(temp,"%s was killed (%s)",
+			    P[1],channels[a]->users[b]->lastsaid);
+				break;
+			}
 				sendPRIVMSG(channel,temp);
 			}else 
 			{
@@ -135,8 +198,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	}
 }
 //------------------------------------------------------------------------------
-void verwerk (char type, char *nick, char *host, char *to, char *data)
-{
+void verwerk (char type, char *nick, char *host, char *to, char *data){
 	//		if (strcasecmp(to,botnick)==0){ // verander dit, botnick variable
 	int a,b;
 	if (to) 
@@ -193,109 +255,5 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		}
 		printf("%s heeft al %d keer iets gezegd.\n",
 			          channels[a]->users[b]->nick,channels[a]->users[b]->lines);
-	}
-		
-	
-	if (type==JOIN){
-		printf("%s joined %s\n",nick, to);
-		char temp[128];
-		sprintf(temp,"WHO %s\xd\xa",to);
-		send(sServer,temp,strlen(temp),0);
-
-        //char temp[128]="WHO ";
-		//strcpy(temp+4,to);
-		//send(sServer,temp,strlen(temp),0);
-		//send (sServer,"\xD\xA",2,0);
-	}
-	
-	if (type==MODE){
-		printf("%s in %s sets MODE %s\n",nick, to, data);
-		// verder uitwerken //
-		
-        //update userlist.
-		char temp[128];
-		sprintf(temp,"WHO %s\xd\xa",to);
-		send(sServer,temp,strlen(temp),0);
-
-    }
-	
-	if (type==NICK){
-		if (strcasecmp(botnick,nick)==0){
-			delete botnick;
-			botnick = new char[1+strlen(data)];
-			strcpy(botnick,data);
-		}
-		int a=0,b;
-		
-		while ( a < channels.size() ){
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				
-				if (channels[a]->users[b]->oldnick!=NULL) 
-										delete channels[a]->users[b]->oldnick;
-				channels[a]->users[b]->oldnick=channels[a]->users[b]->nick;
-				channels[a]->users[b]->nick= new char[1+strlen(data)];
-				strcpy(channels[a]->users[b]->nick,data);
-			}
-			a++;
-		}
-	}
-	
-	if (type==PART){
-		printf("PART\n");
-		int a,b;
- 
-		getChannelNick(a,b,to,nick);
-		if ( a != -1) { 
-			if ( b != -1 ) {
-				if (strcasecmp(nick,botnick)==0){
-                    //blah
-                    printf("BOT left %s",to);
-                    int c;
-                    for ( c = 0; c < channels[a]->users.size(); c++){
-                        delete channels[a]->users[c]->user;
-                        delete channels[a]->users[c]->host;
-                        delete channels[a]->users[c]->server;
-                        delete channels[a]->users[c]->nick;
-                        delete channels[a]->users[c]->mode;
-                        delete channels[a]->users[c]->realname;
-                        if (channels[a]->users[c]->lastsaid)
-                            delete channels[a]->users[c]->lastsaid;
-                        if (channels[a]->users[c]->oldnick)
-                            delete channels[a]->users[c]->oldnick;
-                    }
-                    channels.erase(channels.begin()+a);
-                    
-                } 
-                else{ 
-                    channels[a]->users[b]->lasttime=time(NULL);
-				    channels[a]->users[b]->lasttype='P';
-				    delete channels[a]->users[b]->lastsaid;
-				    channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
-				    strcpy(channels[a]->users[b]->lastsaid,data);
-                }
-            }
-		}
-	}
-//------------------------------------------------------------------------------
-
-	if (type==QUIT){
-		printf("%s quit\n",nick);
-		int a=0,b;
-		
-		while ( a < channels.size() ){
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-// --				
-				channels[a]->users[b]->lasttype='Q';
-				delete channels[a]->users[b]->lastsaid;
-				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
-				strcpy(channels[a]->users[b]->lastsaid,data);
-				
-			}
-			a++;
-		}
 	}
 }

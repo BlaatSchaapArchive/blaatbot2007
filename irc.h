@@ -22,22 +22,20 @@
 #define NOTC 4
 #define NOTP 5
 
-#define JOIN 10
-#define NICK 11
-#define PART 12
-#define KICK 13
-#define QUIT 14
-#define MODE 15
+#define NICK 10
+#define MODE 11
+#define JOIN 12
+#define PART 13
+#define KICK 14
+#define KILL 15
+#define QUIT 16
+
 //------------------------------------------------------------------------------
 #include <vector>
 
 void joinchannel(char *channel);
 void partchannel(char *channel);
 void getChannelNick (int &a, int &b, char *channel, char *nick);
-bool isop(char *channel, char *nick);
-bool botisop(char *channel);
-bool iscsregged(char *mode);
-//	bool iscsregged(char *channel,char *nick);
 void splitnickuser ( char *Ptr, char *&nick, char *&mask);
 void sendNICK(char *nick);
 void sendPRIVMSG(char *target, char *message);
@@ -53,6 +51,7 @@ void receivedata();
 int connect_irc(char *ip, int port);
 void sendAWAY(char *reason);
 void sendBACK();
+void irc_message (char type, char *nick, char *host, char *to, char *data);
 //------------------------------------------------------------------------------	
 	extern char *botnick;
 	extern SOCKET sServer;

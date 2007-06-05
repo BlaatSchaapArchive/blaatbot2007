@@ -1,5 +1,5 @@
 /*
-BlaatSchaap Coding Projects Summer 2007 : IRC BOT IN C / C++
+BlaatSchaap Coding Projects Summer 2007 : SPLIT IRC DATA
 
 
 File    : general.cpp

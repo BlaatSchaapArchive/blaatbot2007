@@ -1,6 +1,6 @@
 # Project: bscp-cbot
 # Makefile created by Dev-C++ 4.9.9.2
-# Edited for linux compilation
+# Edited for *NIX compilation
 
 CPP  = g++
 CC   = gcc
@@ -20,7 +20,7 @@ clean: clean-custom
 	${RM} $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
-	$(CPP) $(LINKOBJ) -o "cbot-0.01" $(LIBS)
+	$(CPP) $(LINKOBJ) -o "cbot" $(LIBS)
 
 main.o: main.cpp
 	$(CPP) -c main.cpp -o main.o $(CXXFLAGS)
