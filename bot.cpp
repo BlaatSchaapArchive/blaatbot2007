@@ -195,6 +195,8 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 			spltstr(data,NrP,P,2);
 			if (NrP) partchannel(P[1]); else partchannel(channel);
 		}
+		if (strncmp("!quit",data,5)==0)
+			sendQUIT(NULL);
 	}
 }
 //------------------------------------------------------------------------------
@@ -220,8 +222,7 @@ void verwerk (char type, char *nick, char *host, char *to, char *data){
 		if (type==NOTP) { //NOTICE PRIVÉ
 			//fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
 			//fflush(channels[a]->logfile);
-			if ( (strcasecmp(nick,"NickServ")!=0) 
-              && (strcasecmp(nick,"ChanServ")!=0)) // --> aanpassen naar *Serv?
+			if (strcasecmp(nick,"serv")!=-1) // --> aanpassen naar *Serv?
 				sendPRIVMSG(nick,"Private Notices not implemented yet");
 		}
 	}

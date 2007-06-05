@@ -337,6 +337,11 @@ void sendBACK(){
      send (sServer,"AWAY\xd\xa",6,0);     
 }
 //------------------------------------------------------------------------------
+void sendQUIT(char *reason){
+	//implement quit reson message
+     send (sServer,"QUIT \xd\xa",6,0);     
+}
+//------------------------------------------------------------------------------
 void sendPRIVMSG(char *target, char *message){
 	char temp[500];
 	sprintf(temp,"PRIVMSG %s %s\xD\xA",target,message);	

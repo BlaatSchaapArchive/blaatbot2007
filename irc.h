@@ -1,8 +1,8 @@
 #ifndef _IRC_H
 #define _IRC_H
 //------------------------------------------------------------------------------	
-#define loud
-#define indreanet
+//#define loud
+//#define indreanet
 //------------------------------------------------------------------------------	
 #ifdef __WIN32__              // compile for WIN32
 #include <winsock.h>          // using winsock     
@@ -51,6 +51,7 @@ void receivedata();
 int connect_irc(char *ip, int port);
 void sendAWAY(char *reason);
 void sendBACK();
+void sendQUIT(char *reason);
 void irc_message (char type, char *nick, char *host, char *to, char *data);
 //------------------------------------------------------------------------------	
 	extern char *botnick;
