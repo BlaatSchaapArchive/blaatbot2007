@@ -21,14 +21,18 @@
 #define PAMS 3
 #define NOTC 4
 #define NOTP 5
+
 #define JOIN 10
-#define PART 11
-#define NICK 12
-#define QUIT 13
+#define NICK 11
+#define PART 12
+#define KICK 13
+#define QUIT 14
+#define MODE 15
 //------------------------------------------------------------------------------
 #include <vector>
 
 void joinchannel(char *channel);
+void partchannel(char *channel);
 void getChannelNick (int &a, int &b, char *channel, char *nick);
 bool isop(char *channel, char *nick);
 bool botisop(char *channel);

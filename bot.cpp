@@ -110,7 +110,9 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	
 	if (strncmp("!ul",data,3)==0){
 		char temp[128];
-		sprintf(temp,"Your userlevel is %d",channels[a]->users[b]->userlevel);
+		sprintf(temp,"Your userlevel is %d, mode %s",
+                    channels[a]->users[b]->userlevel,
+                    channels[a]->users[b]->mode);
 		sendPRIVMSG(channel,temp);
 	}
 	if (channels[a]->users[b]->userlevel > 50 ){
@@ -124,6 +126,11 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
             char *P[3];	int NrP;
 			spltstr(data,NrP,P,2);
 			joinchannel(P[1]);
+		}
+		if (strncmp("!part",data,5)==0){
+            char *P[3];	int NrP;
+			spltstr(data,NrP,P,2);
+			if (NrP) partchannel(P[1]); else partchannel(channel);
 		}
 	}
 }
@@ -151,7 +158,8 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 		if (type==NOTP) { //NOTICE PRIVÉ
 			//fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
 			//fflush(channels[a]->logfile);
-			if (strcasecmp(nick,"NickServ")!=0)
+			if ( (strcasecmp(nick,"NickServ")!=0) 
+              && (strcasecmp(nick,"ChanServ")!=0)) // --> aanpassen naar *Serv?
 				sendPRIVMSG(nick,"Private Notices not implemented yet");
 		}
 	}
@@ -190,11 +198,26 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 	
 	if (type==JOIN){
 		printf("%s joined %s\n",nick, to);
-		char temp[128]="WHO ";
-		strcpy(temp+4,to);
+		char temp[128];
+		sprintf(temp,"WHO %s\xd\xa",to);
 		send(sServer,temp,strlen(temp),0);
-		send (sServer,"\xD\xA",2,0);
+
+        //char temp[128]="WHO ";
+		//strcpy(temp+4,to);
+		//send(sServer,temp,strlen(temp),0);
+		//send (sServer,"\xD\xA",2,0);
 	}
+	
+	if (type==MODE){
+		printf("%s in %s sets MODE %s\n",nick, to, data);
+		// verder uitwerken //
+		
+        //update userlist.
+		char temp[128];
+		sprintf(temp,"WHO %s\xd\xa",to);
+		send(sServer,temp,strlen(temp),0);
+
+    }
 	
 	if (type==NICK){
 		if (strcasecmp(botnick,nick)==0){
@@ -222,21 +245,40 @@ void verwerk (char type, char *nick, char *host, char *to, char *data)
 	if (type==PART){
 		printf("PART\n");
 		int a,b;
-	
+ 
 		getChannelNick(a,b,to,nick);
 		if ( a != -1) { 
 			if ( b != -1 ) {
-				channels[a]->users[b]->lasttime=time(NULL);
-				channels[a]->users[b]->lasttype='P';
-// --
-				delete channels[a]->users[b]->lastsaid;
-				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
-				strcpy(channels[a]->users[b]->lastsaid,data);
-// --
-				
-			}
+				if (strcasecmp(nick,botnick)==0){
+                    //blah
+                    printf("BOT left %s",to);
+                    int c;
+                    for ( c = 0; c < channels[a]->users.size(); c++){
+                        delete channels[a]->users[c]->user;
+                        delete channels[a]->users[c]->host;
+                        delete channels[a]->users[c]->server;
+                        delete channels[a]->users[c]->nick;
+                        delete channels[a]->users[c]->mode;
+                        delete channels[a]->users[c]->realname;
+                        if (channels[a]->users[c]->lastsaid)
+                            delete channels[a]->users[c]->lastsaid;
+                        if (channels[a]->users[c]->oldnick)
+                            delete channels[a]->users[c]->oldnick;
+                    }
+                    channels.erase(channels.begin()+a);
+                    
+                } 
+                else{ 
+                    channels[a]->users[b]->lasttime=time(NULL);
+				    channels[a]->users[b]->lasttype='P';
+				    delete channels[a]->users[b]->lastsaid;
+				    channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
+				    strcpy(channels[a]->users[b]->lastsaid,data);
+                }
+            }
 		}
 	}
+//------------------------------------------------------------------------------
 
 	if (type==QUIT){
 		printf("%s quit\n",nick);
