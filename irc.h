@@ -14,6 +14,10 @@
 #define SOCKET int 
 #define SOCKET_ERROR -1
 #endif	
+
+extern char *botnick;
+extern SOCKET sServer;
+
 //------------------------------------------------------------------------------
 #define CMES 0
 #define AMES 1
@@ -54,8 +58,6 @@ void sendBACK();
 void sendQUIT(char *reason);
 void irc_message (char type, char *nick, char *host, char *to, char *data);
 //------------------------------------------------------------------------------	
-	extern char *botnick;
-	extern SOCKET sServer;
 	extern char *ostype,*osrelease,*osname,*machine;
 //------------------------------------------------------------------------------	
 	struct ircuser{ 

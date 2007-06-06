@@ -37,10 +37,12 @@ freely, subject to the following restrictions:
 #include <stdio.h>
 #include <vector>
 
+
 using namespace std;
 char *ostype,*osrelease,*osname,*machine;
 
 // for now --> remove after clasification.
+
 char *botnick;
 #ifdef __WIN32__
 #include <winsock.h>
@@ -48,6 +50,7 @@ SOCKET sServer;
 #else
 int sServer;
 #endif
+
 //------------------------------------------------------------------------------
 
 #include "osinfo.h"

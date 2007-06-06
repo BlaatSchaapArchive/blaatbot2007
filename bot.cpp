@@ -69,6 +69,13 @@ bool botisop(char *channel){
 	return isop(channel, botnick);
 }
 //------------------------------------------------------------------------------
+bool isService(char *nick){
+	printf("%s ",nick);
+	if (strlen(nick)>4)	
+		if (strcasecmp(nick+(strlen(nick)-4),"serv")==0) return true;
+	return false;
+}
+//------------------------------------------------------------------------------
 
 bool iscsregged(char *mode){
      // naar bot?
@@ -212,18 +219,21 @@ void verwerk (char type, char *nick, char *host, char *to, char *data){
 		if (type==PMES) { //MESSAGE PRIVÉ
 			//fprintf(channels[a]->logfile,">%s< %s \n",nick,data);			
 			//fflush(channels[a]->logfile);
-			sendPRIVMSG(nick,"PM not implemented yet");
+			if (!(isService(nick)))
+				sendPRIVMSG(nick,"PM not implemented yet");
 		}			
 		if (type==PAMS) { //ACTION PRIVÉ
 			//fprintf(channels[a]->logfile,">%s %s<\n",nick,data);			
 			//fflush(channels[a]->logfile);
-			sendPRIVMSG(nick,"PM not implemented yet");
+			if (!(isService(nick)))
+				sendPRIVMSG(nick,"PM not implemented yet");
 		}				
 		if (type==NOTP) { //NOTICE PRIVÉ
 			//fprintf(channels[a]->logfile,"#%s# %s \n",nick,data);			
 			//fflush(channels[a]->logfile);
-			if (strcasecmp(nick,"serv")!=-1) // --> aanpassen naar *Serv?
-				sendPRIVMSG(nick,"Private Notices not implemented yet");
+			//if (strcasecmp(nick,"serv")!=-1)
+			if (!(isService(nick)))
+					sendPRIVMSG(nick,"Private Notices not implemented yet");
 		}
 	}
 	if (type==CMES || type==AMES|| type==NOTC ){

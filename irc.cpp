@@ -51,6 +51,7 @@ using namespace std;
 #include "bot.h"
 #include "osinfo.h"
 #include "general.h"
+#include "main.h"
 
 vector <ircchannel*> channels;
 
@@ -129,6 +130,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
 				if (strcasecmp(nick,botnick)==0){
                     //blah
                     printf("BOT left %s",to);
+					fprintf(channels[a]->logfile,"BOT left %s",to);
                     int c;
                     for ( c = 0; c < channels[a]->users.size(); c++){
                         delete channels[a]->users[c]->user;
@@ -141,6 +143,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                             delete channels[a]->users[c]->lastsaid;
                         if (channels[a]->users[c]->oldnick)
                             delete channels[a]->users[c]->oldnick;
+						fclose(channels[a]->logfile);
                     }
                     channels.erase(channels.begin()+a);
                     
@@ -166,6 +169,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
 				if (strcasecmp(nick,botnick)==0){
                     //blah
                     printf("BOT got kicked %s",to);
+					fprintf(channels[a]->logfile,"BOT got kicked %s",to);
                     int c;
                     for ( c = 0; c < channels[a]->users.size(); c++){
                         delete channels[a]->users[c]->user;
@@ -178,6 +182,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                             delete channels[a]->users[c]->lastsaid;
                         if (channels[a]->users[c]->oldnick)
                             delete channels[a]->users[c]->oldnick;
+						fclose(channels[a]->logfile);
                     }
                     channels.erase(channels.begin()+a);
                 } 
@@ -199,7 +204,8 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
             int c,d;
 		   	for ( c = 0 ; c < channels.size();c++){
             	for ( d = 0; d < channels[c]->users.size(); d++){
-                	delete channels[c]->users[d]->user;
+                	fprintf(channels[c]->logfile,"BOT quit %s",to);
+					delete channels[c]->users[d]->user;
                     delete channels[c]->users[d]->host;
                     delete channels[c]->users[d]->server;
                     delete channels[c]->users[c]->nick;
@@ -209,6 +215,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                         delete channels[c]->users[d]->lastsaid;
                     if (channels[c]->users[d]->oldnick)
                         delete channels[c]->users[d]->oldnick;
+					fclose(channels[c]->logfile);
                 }
                 channels.erase(channels.begin()+c);
 			}
@@ -241,6 +248,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
             int c,d;
 		   	for ( c = 0 ; c < channels.size();c++){
             	for ( d = 0; d < channels[c]->users.size(); d++){
+					fprintf(channels[c]->logfile,"BOT got killed %s",to);
                 	delete channels[c]->users[d]->user;
                     delete channels[c]->users[d]->host;
                     delete channels[c]->users[d]->server;
@@ -251,6 +259,7 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                         delete channels[c]->users[d]->lastsaid;
                     if (channels[c]->users[d]->oldnick)
                         delete channels[c]->users[d]->oldnick;
+					fclose(channels[c]->logfile);
                 }
                 channels.erase(channels.begin()+c);
 			}
