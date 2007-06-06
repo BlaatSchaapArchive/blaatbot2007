@@ -139,38 +139,36 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 		return;
 	}	
 	
-	if (strcmp(channel,IRC.botnick)!=0 )
+			
+	
+	if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
 		if (strncmp("!lines",data,6)==0){
-			char *P[3];	int NrP;
+			char *P[3]={0,0,0};	int NrP;
 			spltstr(data,NrP,P,2);
 	    a=-1;b=-1;
 			printf("user:%s channel:%s\n",P[1],channel);
-		if (data+6!=NULL) IRC.getChannelNick(a,b,channel,P[1]);
+		if (P[1]) IRC.getChannelNick(a,b,channel,P[1]);	
 			if ( a != -1){
 				if ( b != -1){
 					char temp[128];
-					sprintf("%s has said %d lines.",nick, 
+					sprintf(temp,"%s has said %d lines.",P[1], 
 						IRC.channels[a]->users[b]->lines);
 					IRC.sendPRIVMSG(target,temp);
-					if ( IRC.channels[a]->users[b]->lines < 50);
-						sprintf("%s will be voiced after %d lines.",nick, 
+					if ( IRC.channels[a]->users[b]->lines < 50);{
+						sprintf(temp,"%s will be voiced after %d lines.",P[1], 
 						50 - IRC.channels[a]->users[b]->lines);
-					IRC.sendPRIVMSG(target,temp);
-			
-				}
-			}
+					IRC.sendPRIVMSG(target,temp);}
+				} printf("user unknown\n");
+			} printf("channel unknown\n");   return;
 		}
-	
-	
-	
-	
-	if (strcmp(channel,IRC.botnick)==0 )// message in een channel
+//------------------------------------------------------------------------------	
+	if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
 		if (strncmp("!seen",data,5)==0){
-			char *P[3];	int NrP;
+			char *P[3]={0,0,0};	int NrP;
 			spltstr(data,NrP,P,2);
 	    a=-1;b=-1;
 			printf("user:%s channel:%s\n",P[1],channel);
-		if (data+5!=NULL) IRC.getChannelNick(a,b,channel,P[1]);
+		if (P[1])	IRC.getChannelNick(a,b,channel,P[1]);
 			if ( a != -1){
 				if ( b != -1){
 					char temp[128];
