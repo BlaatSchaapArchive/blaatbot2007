@@ -706,6 +706,13 @@ void IRCclient::irc_received(char *data){
     if (strlen(Param[1])==3) {
 		if (strncmp (Param[1],"001",3) == 0){
 			printf("Login Successfull\n");
+			if ((strcasecmp(botnick,Param[2]))!=0){
+				delete botnick;
+				botnick = new char[1+strlen(Param[2])];
+				strcpy(botnick,Param[2]);
+				// waarom is me dit niet eerder opgevallen?????
+			}
+	
   		}
 		if (strncmp (Param[1],"352",3) == 0){
 			if (NrParam == 9){
@@ -733,7 +740,8 @@ void IRCclient::irc_received(char *data){
 		  		nick[strlen(nick)]='_';	  
 		  		printf("Retrying with %s ...\n",nick);	      
                 sendNICK(nick);
-		  		delete botnick;
+		  		//delete botnick;
+				
 
 	  		}
 	
