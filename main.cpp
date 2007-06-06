@@ -37,26 +37,15 @@ freely, subject to the following restrictions:
 #include <stdio.h>
 #include <vector>
 
-
 using namespace std;
 char *ostype,*osrelease,*osname,*machine;
-
-// for now --> remove after clasification.
-
-char *botnick;
-#ifdef __WIN32__
-#include <winsock.h>
-SOCKET sServer;
-#else
-int sServer;
-#endif
 
 //------------------------------------------------------------------------------
 
 #include "osinfo.h"
 #include "irc.h"
 
-
+IRCclient IRC;
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[]){
     getOSinfo(ostype,osrelease,osname,machine);
@@ -66,11 +55,11 @@ int main(int argc, char *argv[]){
 #else		
     char *ip="62.75.201.175";
 #endif	
-	if (!(connect_irc(ip,port))){                            
-	botnick = new char[1+sizeof("BlaatBot2007")];
-	sprintf(botnick,"BlaatBot2007");
-        login ();
-        receivedata();
+	
+	if (!(IRC.connect_irc(ip,port))){                            
+		IRC.login ();
+//		IRC.receivedata();
+        
 	printf("Connection lost\n");
 	delete ostype;delete osrelease;delete osname;delete machine;
 

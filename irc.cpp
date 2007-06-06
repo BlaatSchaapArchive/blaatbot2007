@@ -1,4 +1,3 @@
-//#define loud
 /*
 BlaatSchaap Coding Projects Summer 2007 : IRC PROTOCOL IMPELENTATION IN C / C++
 
@@ -53,13 +52,96 @@ using namespace std;
 #include "general.h"
 #include "main.h"
 
-vector <ircchannel*> channels;
+//vector <ircchannel*> channels;
+//char *botnick;
+//SOCKET sServer;
 
-
+// IRCclient::
 
 
 //------------------------------------------------------------------------------
-void irc_message (char type, char *nick, char *host, char *to, char *data){
+void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *data){
+		int a,b;
+	if (to) 
+		getChannelNick(a,b,to,nick);
+	
+	if (type==PMES || type==PAMS || type==NOTP ){
+		prive = fopen (nick,"a");
+		
+		splituserhost(host,pm.user,pm.host);
+		pm.nick = nick;
+		//pm.mode = ?? --> is user csregged? geen check nu
+		pm.userlevel=userlevel("","",pm.nick,pm.host);
+		
+		if (type==PMES) { //MESSAGE PRIVÉ
+			
+			fprintf(prive,"<%s> %s \n",nick,data);		
+
+			// copy-paste van CMES
+			if (data[0]=='!') botcommand(type,nick, host, to, data);			
+			
+			
+			//if (!(isService(nick)))
+			//	sendPRIVMSG(nick,"PM not implemented yet");
+		}			
+		if (type==PAMS) { //ACTION PRIVÉ
+			
+			fprintf(prive,"*%s %s*\n",nick,data);			
+			
+			//if (!(isService(nick)))
+			//	IRC.sendPRIVMSG(nick,"PM not implemented yet");
+		}				
+		if (type==NOTP) { //NOTICE PRIVÉ
+			
+			fprintf(prive,"#%s# %s \n",nick,data);			\
+			
+			
+			//if (!(isService(nick)))
+			//		sendPRIVMSG(nick,"Private Notices not implemented yet");
+		}
+		fclose(prive);
+	}
+	if (type==CMES || type==AMES|| type==NOTC ){
+		if ( a == -1 ) return;
+		if ( b == -1 ) return;
+		delete (channels[a]->users[b]->lastsaid); 
+		channels[a]->users[b]->lasttype=type;
+		channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
+	    strcpy(channels[a]->users[b]->lastsaid,data);
+		channels[a]->users[b]->lasttime = time(NULL);
+		channels[a]->users[b]->lines++;
+		if (type==CMES) {//MESSAGE CHANNEL
+			fprintf(channels[a]->logfile,"<%s> %s\n",nick,data);
+			fflush(channels[a]->logfile);
+			channels[a]->users[b]->lasttype = 'T';
+			
+			// uhm dit moet uit IRCclient en naar ergens de botcode
+			// dus ... uhm ... moet de hele string gepasst worden
+			// naar de botcode?
+			if (data[0]=='!') botcommand(type,nick, host, to, data);
+		}
+		if (type==AMES) {//ACTION CHANNEL
+			fprintf(channels[a]->logfile,"* %s %s *\n",nick,data);			
+			fflush(channels[a]->logfile);
+			channels[a]->users[b]->lasttype = 'A';
+		}
+		if (type==NOTC) { //NOTICE CHANNEL
+			fprintf(channels[a]->logfile,"-%s- %s\n",nick,data);
+			fflush(channels[a]->logfile);
+			channels[a]->users[b]->lasttype = 'N';
+		}
+		if (channels[a]->users[b]->lines==50) {//maak setbaar
+			setmode(to,nick,"+v");
+		}
+		printf("%s heeft al %d keer iets gezegd.\n",
+			      channels[a]->users[b]->nick,channels[a]->users[b]->lines);
+	}
+	
+	
+	
+	
+	
+	
 	if (type==JOIN){
 		printf("%s joined %s\n",nick, to);
 		char temp[128];
@@ -76,27 +158,6 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
 		sprintf(temp,"WHO %s\xd\xa",to);
 		send(sServer,temp,strlen(temp),0);
     }
-/*	
-//------------------------------------------------------------------------------
-		if (type==KILL){
-			printf("%s killed %s because %s \n",nick, to, data);
-				int a=0,b;
-		
-		while ( a < channels.size() ){
-			for ( b = 0; ( b < channels[a]->users.size() ) && 
-					   ( strcasecmp (to ,channels[a]->users[b]->nick) != 0); b++);
-			if ( b < channels[a]->users.size() ) {// user bestaat in channel;
-				channels[a]->users[b]->lasttype='k';
-				delete channels[a]->users[b]->lastsaid;
-				channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
-				strcpy(channels[a]->users[b]->lastsaid,data);
-			}
-			a++;
-		}
-    }
-
-//------------------------------------------------------------------------------	
-*/	
 	if (type==NICK){
 		if (strcasecmp(botnick,nick)==0){
 			delete botnick;
@@ -143,8 +204,9 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                             delete channels[a]->users[c]->lastsaid;
                         if (channels[a]->users[c]->oldnick)
                             delete channels[a]->users[c]->oldnick;
-						fclose(channels[a]->logfile);
+						
                     }
+					fclose(channels[a]->logfile);
                     channels.erase(channels.begin()+a);
                     
                 } 
@@ -182,8 +244,9 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                             delete channels[a]->users[c]->lastsaid;
                         if (channels[a]->users[c]->oldnick)
                             delete channels[a]->users[c]->oldnick;
-						fclose(channels[a]->logfile);
+						
                     }
+					fclose(channels[a]->logfile);
                     channels.erase(channels.begin()+a);
                 } 
                 else{ 
@@ -215,8 +278,9 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                         delete channels[c]->users[d]->lastsaid;
                     if (channels[c]->users[d]->oldnick)
                         delete channels[c]->users[d]->oldnick;
-					fclose(channels[c]->logfile);
+					
                 }
+				fclose(channels[c]->logfile);
                 channels.erase(channels.begin()+c);
 			}
 		}else
@@ -259,8 +323,9 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
                         delete channels[c]->users[d]->lastsaid;
                     if (channels[c]->users[d]->oldnick)
                         delete channels[c]->users[d]->oldnick;
-					fclose(channels[c]->logfile);
+					
                 }
+				fclose(channels[c]->logfile);
                 channels.erase(channels.begin()+c);
 			}
 		}else
@@ -287,21 +352,21 @@ void irc_message (char type, char *nick, char *host, char *to, char *data){
 //------------------------------------------------------------------------------
 
 
-void joinchannel(char *channel){
+void IRCclient::joinchannel(char *channel){
 	char temp[500];
 	sprintf(temp,"JOIN %s\xd\xa",channel);
 	send (sServer,temp,strlen(temp),0);
 }
 //------------------------------------------------------------------------------
 
-void partchannel(char *channel){
+void IRCclient::partchannel(char *channel){
 	char temp[500];
 	sprintf(temp,"PART %s\xd\xa",channel);
 	send (sServer,temp,strlen(temp),0);
 }
 //------------------------------------------------------------------------------
 
-void getChannelNick (int &a, int &b, char *channel, char *nick){
+void IRCclient::getChannelNick (int &a, int &b, char *channel, char *nick){
 
 	//--------------------------------------------------------------------------
 	for ( a = 0; (a < channels.size()) &&
@@ -316,7 +381,7 @@ void getChannelNick (int &a, int &b, char *channel, char *nick){
 	} else  a=-1; 
 }
 //------------------------------------------------------------------------------
-void splitnickuser ( char *Ptr, char *&nick, char *&mask ){
+void IRCclient::splitnickuser ( char *Ptr, char *&nick, char *&mask ){
 	Ptr++;
 	nick=Ptr;
 	bool done=false;
@@ -329,51 +394,68 @@ void splitnickuser ( char *Ptr, char *&nick, char *&mask ){
 		Ptr++;
 	}
 }
+
 //------------------------------------------------------------------------------
-void sendNICK(char *nick){
+void IRCclient::splituserhost ( char *Ptr, char *&user, char *&host ){
+	Ptr++;
+	user=Ptr;
+	bool done=false;
+	while(*Ptr != 0 && !done) {
+		if(*Ptr == '@'){
+			*Ptr = 0;
+    		host = Ptr+1;
+    		done = true;
+		}
+		Ptr++;
+	}
+}
+//------------------------------------------------------------------------------
+
+
+void IRCclient::sendNICK(char *nick){
      char temp[128];
      sprintf(temp,"NICK %s\xd\xa",nick);
      send (sServer,temp,strlen(temp),0);     
 }
 //------------------------------------------------------------------------------
-void sendAWAY(char *reason){
+void IRCclient::sendAWAY(char *reason){
      char temp[666];
      sprintf(temp,"AWAY :%s\xd\xa",reason);
      send (sServer,temp,strlen(temp),0);     
 }
 //------------------------------------------------------------------------------
-void sendBACK(){
+void IRCclient::sendBACK(){
      send (sServer,"AWAY\xd\xa",6,0);     
 }
 //------------------------------------------------------------------------------
-void sendQUIT(char *reason){
+void IRCclient::sendQUIT(char *reason){
 	//implement quit reson message
      send (sServer,"QUIT \xd\xa",6,0);     
 }
 //------------------------------------------------------------------------------
-void sendPRIVMSG(char *target, char *message){
+void IRCclient::sendPRIVMSG(char *target, char *message){
 	char temp[500];
 	sprintf(temp,"PRIVMSG %s %s\xD\xA",target,message);	
 	send (sServer,temp,strlen(temp),0);
 }
 //------------------------------------------------------------------------------
 
-void sendNOTICE(char *target, char *message){
+void IRCclient::sendNOTICE(char *target, char *message){
 	char temp[500];
 	sprintf(temp,"NOTICE %s %s\xD\xA",target,message);	
 	send (sServer,temp,strlen(temp),0);
 }
 //------------------------------------------------------------------------------
 
-void sendACTION(char *target, char *message){
+void IRCclient::sendACTION(char *target, char *message){
 	char temp[500];
 	sprintf(temp,"PRIVMSG %s \x01\x41\x43TION %s\x1\xD\xA",target,message);	
 	send (sServer,temp,strlen(temp),0);
 }
-//------------------------------------------------------------------------------
 
-char userlevel (char *mode, char *channel, char *nick, char *host){
-// naar bot
+//------------------------------------------------------------------------------
+char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
+// naar bot ?
 	
 		
 	if (strcasecmp(host,"Indre-7A2D8200.xs4all.nl")==0)
@@ -382,24 +464,20 @@ char userlevel (char *mode, char *channel, char *nick, char *host){
 		return 100; //thuis chat4all
 	
 	if (strcasecmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
-		return 100; // school indeanet
+		return 100; // school 0160 indeanet
 	if (strcasecmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
-		return 100; // school chat4all
+		return 100; // school 0160 chat4all
 	
-    if (isop(channel,nick)) return 56; //->test
+	if (strcmp(channel,"")!=0) //pm
+    if (isop(channel,nick)) return 50; //->test
 	
-	if (iscsregged(mode)) return 55; //debug??
+	if (iscsregged(mode)) return 25; //debug??
 	
-	
-
-	//
-	
-	// --> hard coded for now .... will be in file later
 	return 0;
 }
 //------------------------------------------------------------------------------
 
-void userlist (char *channel, char *user, char *host, char *server,
+void IRCclient::userlist (char *channel, char *user, char *host, char *server,
 	char *nick,    char *mode, char *realname)
 {
     int a,b;
@@ -490,7 +568,7 @@ void userlist (char *channel, char *user, char *host, char *server,
 }	
 //------------------------------------------------------------------------------
 
-void setmode(char *channel, char *nick, char *mode){
+void IRCclient::setmode(char *channel, char *nick, char *mode){
 	if (botisop(channel)) {
 		char temp[128];
 		sprintf(temp,"MODE %s %s %s\xd\xa",channel,mode,nick);
@@ -498,7 +576,7 @@ void setmode(char *channel, char *nick, char *mode){
 	}
 }
 //------------------------------------------------------------------------------
-void irc_received(char *data){
+void IRCclient::irc_received(char *data){
 	char *rawdata = new char[1+strlen(data)];
 	strcpy(rawdata,data);
     int NrParam;
@@ -537,7 +615,7 @@ void irc_received(char *data){
 		    strncmp (Param[1],"KILL",4) == 0 ||
 		    strncmp (Param[1],"MODE",4) == 0 ){              
 			//if (NrParam == 2 ) {  
-				bool done = false; 
+
 				{
 				char* nick;
           		char* mask=NULL;
@@ -579,9 +657,9 @@ void irc_received(char *data){
           		char* mask=NULL;
           		splitnickuser(Param[0],nick,mask);	
 				if (strcasecmp(Param[2],botnick)== 0)
-					verwerk(NOTP,nick,mask,Param[2],Param[3]);	
+					irc_message(NOTP,nick,mask,Param[2],Param[3]);	
 				else
-					verwerk(NOTC,nick,mask,Param[2],Param[3]);
+					irc_message(NOTC,nick,mask,Param[2],Param[3]);
 									
 			}	
 		}
@@ -602,9 +680,9 @@ void irc_received(char *data){
 						    Param[3][strlen(Param[3])-1]=0x00;
 							//printf("%s%s\n",nick, Param[3]+7);
 							if (strcasecmp(Param[2],botnick)== 0)
-								verwerk(PAMS,nick,mask,Param[2],Param[3]+8);
+								irc_message(PAMS,nick,mask,Param[2],Param[3]+8);
 							else
-								verwerk(AMES,nick,mask,Param[2],Param[3]+8);
+								irc_message(AMES,nick,mask,Param[2],Param[3]+8);
 							
 						}
 					}
@@ -618,9 +696,9 @@ void irc_received(char *data){
 				}
 		  		else {
 					if (strcasecmp(Param[2],botnick)== 0)
-					verwerk(PMES,nick,mask,Param[2],Param[3]);	
+					irc_message(PMES,nick,mask,Param[2],Param[3]);	
 					else
-					verwerk(CMES,nick,mask,Param[2],Param[3]);
+					irc_message(CMES,nick,mask,Param[2],Param[3]);
 				}
 			}
 		}
@@ -666,16 +744,20 @@ void irc_received(char *data){
 }
 
 
-void login ()
+void IRCclient::login ()
 {
+	botnick = new char[1+sizeof("BlaatBot2007")];
+    sprintf(botnick,"BlaatBot2007");
+
 	printf("Connected... logging in as %s ...\n",botnick);
     char temp[128];
     sendNICK(botnick);
     sprintf(temp,"USER bscp_cbot bscp_host bscp_server :BlaatSchaap Coding Projects 2007 IRC BOT\xd\xa");
     send (sServer,temp, strlen(temp), 0);
+	receivedata();
 }
 
-void receivedata(){
+void IRCclient::receivedata(){
     char temp[666];
 	int received_size=0;
 	while(1){
@@ -690,7 +772,7 @@ void receivedata(){
     }
 }
 
-int connect_irc(char *ip, int port){
+int IRCclient::connect_irc(char *ip, int port){
 #ifdef __WIN32__
     SOCKADDR_IN saServer;             // WINSOCK
     WSADATA wsda;                     
