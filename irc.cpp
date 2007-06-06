@@ -64,13 +64,14 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 		int a,b;
 	if (to) 
 		getChannelNick(a,b,to,nick);
-	
+	/*
 	if (type==PMES || type==PAMS || type==NOTP ){
 		prive = fopen (nick,"a");
 		
 		splituserhost(host,pm.user,pm.host);
 		pm.nick = nick;
 		//pm.mode = ?? --> is user csregged? geen check nu
+		if (pm.host)
 		pm.userlevel=userlevel("","",pm.nick,pm.host);
 		
 		if (type==PMES) { //MESSAGE PRIVÉ
@@ -101,6 +102,8 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 		}
 		fclose(prive);
 	}
+	
+	*/
 	if (type==CMES || type==AMES|| type==NOTC ){
 		if ( a == -1 ) return;
 		if ( b == -1 ) return;
@@ -398,6 +401,7 @@ void IRCclient::splitnickuser ( char *Ptr, char *&nick, char *&mask ){
 //------------------------------------------------------------------------------
 void IRCclient::splituserhost ( char *Ptr, char *&user, char *&host ){
 	Ptr++;
+	host=NULL;
 	user=Ptr;
 	bool done=false;
 	while(*Ptr != 0 && !done) {
