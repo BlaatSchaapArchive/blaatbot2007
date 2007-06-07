@@ -1,0 +1,48 @@
+
+[filenumbers]
+0=56
+1=2
+2=141
+3=748
+4=4
+5=7
+6=4
+7=4
+
+[filemarkers]
+0=
+1=
+2=
+3=
+4=
+5=
+6=
+7=
+
+[File View]
+filter.file.unmatch=*.so *.o *.a *.la
+filter.file.ignore.hidden=0
+filter.dir.ignore.hidden=0
+
+[executer]
+RunInTerminal=true
+
+[Project State]
+clean before build=false
+
+[filelist]
+0=/home/andre/Projects/cbot/main.cpp
+1=/home/andre/Projects/cbot/general.cpp
+2=/home/andre/Projects/cbot/bot.cpp
+3=/home/andre/Projects/cbot/irc.cpp
+4=/home/andre/Projects/cbot/irc.h
+5=/home/andre/Projects/cbot/bot.h
+6=/home/andre/test.c
+
+[Project Tree]
+0=0
+1=0:0
+2=0:1
+
+[File Tree]
+0=0

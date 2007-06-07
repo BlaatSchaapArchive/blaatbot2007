@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<DeveloperStudio>
+  <settings version="0.0" language="C++ - Empty project" projectname="cbot" projectdir="/boot/home/admin/projects/" projectfile="/boot/home/admin/projects/cbot/cbot.dst" startupfile="" mainexecutable="/boot/home/admin/projects/cbot/cbot.app"/>
+  <filereference path="/boot/home/admin/projects/cbot/bot.cpp" name="bot.cpp" compile="1"/>
+  <filereference path="/boot/home/admin/projects/cbot/general.cpp" name="general.cpp" compile="1"/>
+  <filereference path="/boot/home/admin/projects/cbot/irc.cpp" name="irc.cpp" compile="1"/>
+  <filereference path="/boot/home/admin/projects/cbot/main.cpp" name="main.cpp" compile="1"/>
+  <filereference path="/boot/home/admin/projects/cbot/osinfo.cpp" name="osinfo.cpp" compile="1"/>
+  <filereference path="/boot/home/admin/projects/cbot/bot.h" name="bot.h" compile="0"/>
+  <filereference path="/boot/home/admin/projects/cbot/general.h" name="general.h" compile="0"/>
+  <filereference path="/boot/home/admin/projects/cbot/irc.h" name="irc.h" compile="0"/>
+  <filereference path="/boot/home/admin/projects/cbot/main.h" name="main.h" compile="0"/>
+  <filereference path="/boot/home/admin/projects/cbot/osinfo.h" name="osinfo.h" compile="0"/>
+  <compiler options=""/>
+  <linker options=""/>
+</DeveloperStudio>
