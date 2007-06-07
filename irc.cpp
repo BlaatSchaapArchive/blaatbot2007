@@ -50,7 +50,7 @@ using namespace std;
 #include "bot.h"
 #include "osinfo.h"
 #include "general.h"
-#include "main.h"
+#include "main.h" 
 
 //vector <ircchannel*> channels;
 //char *botnick;
@@ -64,10 +64,12 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 		int a,b;
 	if (to) 
 		getChannelNick(a,b,to,nick);
-	/*
+	
 	if (type==PMES || type==PAMS || type==NOTP ){
+		if (nick==0) nick="server"; 
+			
 		prive = fopen (nick,"a");
-		
+		if (host!=NULL) { pm.host=NULL; pm.user=NULL; } else
 		splituserhost(host,pm.user,pm.host);
 		pm.nick = nick;
 		//pm.mode = ?? --> is user csregged? geen check nu
@@ -103,7 +105,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 		fclose(prive);
 	}
 	
-	*/
+	
 	if (type==CMES || type==AMES|| type==NOTC ){
 		if ( a == -1 ) return;
 		if ( b == -1 ) return;
@@ -387,12 +389,14 @@ void IRCclient::getChannelNick (int &a, int &b, char *channel, char *nick){
 void IRCclient::splitnickuser ( char *Ptr, char *&nick, char *&mask ){
 	Ptr++;
 	nick=Ptr;
-	bool done=false;
-	while(*Ptr != 0 && !done) {
+	//mask=NULL;
+	//bool done=false;
+	while(*Ptr !=0 ) {
 		if(*Ptr == '!'){
 			*Ptr = 0;
     		mask = Ptr+1;
-    		done = true;
+    		return;
+    //		done = true;
 		}
 		Ptr++;
 	}
@@ -400,15 +404,21 @@ void IRCclient::splitnickuser ( char *Ptr, char *&nick, char *&mask ){
 
 //------------------------------------------------------------------------------
 void IRCclient::splituserhost ( char *Ptr, char *&user, char *&host ){
+	
+	if (Ptr == 0 ) { user = "Unknown" ; host = NULL ;printf(" ERROR !!!\n"); return ;}
+	// vangnet ... dit mag niet maar ..... 
+	
+	
 	Ptr++;
-	host=NULL;
 	user=Ptr;
-	bool done=false;
-	while(*Ptr != 0 && !done) {
+	host=NULL;
+	//bool done=false;
+	while(*Ptr != 0) {
 		if(*Ptr == '@'){
 			*Ptr = 0;
     		host = Ptr+1;
-    		done = true;
+    		return;
+    	//	done = true;
 		}
 		Ptr++;
 	}
@@ -660,6 +670,9 @@ void IRCclient::irc_received(char *data){
           		char* nick;
           		char* mask=NULL;
           		splitnickuser(Param[0],nick,mask);	
+          		
+          		//if (mask==NULL) { printf("mask error\n"); mask = "ERROR" ; } // debug!!!
+				
 				if (strcasecmp(Param[2],botnick)== 0)
 					irc_message(NOTP,nick,mask,Param[2],Param[3]);	
 				else
@@ -734,6 +747,7 @@ void IRCclient::irc_received(char *data){
 			sendPRIVMSG("nickserv","identify bscp2007");
 			joinchannel("#blaatschaap");
 			joinchannel("#country-roads");
+			//joinchannel("#blaat");
 			#endif
 		}
 		if (strncmp (Param[1],"433",3) == 0){
