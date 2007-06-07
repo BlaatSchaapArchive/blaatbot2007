@@ -35,6 +35,11 @@ freely, subject to the following restrictions:
 			'438' = bick change too fast
             '432' = illegal chars in nick
 			
+			
+			
+			--->> op nickverandering ook userlevel bijwerken 
+			--->> privé userlevel checken
+			
 
 */
 
@@ -69,7 +74,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 		if (nick==0) nick="server"; 
 			
 		prive = fopen (nick,"a");
-		if (host!=NULL) { pm.host=NULL; pm.user=NULL; } else
+		if (host==NULL){pm.host=NULL; pm.user=NULL; printf("hostNULL!\n");}else
 		splituserhost(host,pm.user,pm.host);
 		pm.nick = nick;
 		//pm.mode = ?? --> is user csregged? geen check nu
@@ -688,6 +693,8 @@ void IRCclient::irc_received(char *data){
           		char* nick;
           		char* mask=NULL;
           		splitnickuser(Param[0],nick,mask);	
+				
+				printf("Nick %s\nMask %s\n",nick,mask);
 				
                 if (Param[3][0] == 1){ // CTCP or ACTION
             		if (strlen(Param[3])>7){
