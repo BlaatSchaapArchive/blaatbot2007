@@ -50,19 +50,19 @@ IRCclient IRC;
 int main(int argc, char *argv[]){
     getOSinfo(ostype,osrelease,osname,machine);
     int port = 6667;
-#ifdef indreanet	
+#ifdef indreanet    
     char *ip="195.28.165.175";
-#else		
+#else        
     char *ip="62.75.201.175";
-#endif	
-	
-	if (!(IRC.connect_irc(ip,port))){                            
-		IRC.login ();
-//		IRC.receivedata();
+#endif    
+    
+    if (!(IRC.connect_irc(ip,port))){                            
+        IRC.login ();
+//        IRC.receivedata();
         
-	printf("Connection lost\n");
-	delete ostype;delete osrelease;delete osname;delete machine;
+    printf("Connection lost\n");
+    delete[] ostype;delete[] osrelease;delete[] osname;delete[] machine;
 
-	}
+    }
 }
 //------------------------------------------------------------------------------

@@ -182,67 +182,67 @@ strcpy(machine,machine_);
 #include <string.h>
 
 void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
-	FILE *myfile;
-	
-	system("uname -s >./ostype");
-	system("uname -r >./osrelease");
-	system("uname -m >./machine");
-	
-	myfile= fopen ("./ostype","rt");	
-	if (myfile){
-		fseek(myfile,0,2);
-		int filesize=ftell(myfile);
-		fseek(myfile,0,0);
-		ostype = new char[filesize+1];
-		fread(ostype,filesize,1,myfile);
-		fclose(myfile);
-		remove("./ostype");
-	}
-	else{
-		ostype = new char[8];
-		strcpy(ostype,"Unknown");
-	}
-	
-	myfile= fopen ("./osrelease","rt");	
-	if (myfile){
-		fseek(myfile,0,2);
-		int filesize=ftell(myfile);
-		fseek(myfile,0,0);
-		osrelease = new char[filesize+1];
-		fread(osrelease,filesize,1,myfile);
-		fclose(myfile);
-		remove("./osrelease");
-	}
-	else{
-		osrelease = new char[8];
-		strcpy(osrelease,"Unknown");
-	}
-	
-	myfile= fopen ("./machine","rt");	
-	if (myfile){
-		fseek(myfile,0,2);
-		int filesize=ftell(myfile);
-		fseek(myfile,0,0);
-		machine = new char[filesize+1];
-		fread(machine,filesize,1,myfile);
-		fclose(myfile);
-		remove("./machine");
-	}
-	else{
-		machine = new char[8];
-		strcpy(machine,"Unknown");
-	}
-	
-	
-	ostype[strlen(ostype)-1]=0;
-	osrelease[strlen(osrelease)-1]=0;
-	machine[strlen(machine)-1]=0;
-	osname= new char [strlen(ostype) + strlen(osrelease) + 2];
+    FILE *myfile;
+    
+    system("uname -s >./ostype");
+    system("uname -r >./osrelease");
+    system("uname -m >./machine");
+    
+    myfile= fopen ("./ostype","rt");    
+    if (myfile){
+        fseek(myfile,0,2);
+        int filesize=ftell(myfile);
+        fseek(myfile,0,0);
+        ostype = new char[filesize+1];
+        fread(ostype,filesize,1,myfile);
+        fclose(myfile);
+        remove("./ostype");
+    }
+    else{
+        ostype = new char[8];
+        strcpy(ostype,"Unknown");
+    }
+    
+    myfile= fopen ("./osrelease","rt");    
+    if (myfile){
+        fseek(myfile,0,2);
+        int filesize=ftell(myfile);
+        fseek(myfile,0,0);
+        osrelease = new char[filesize+1];
+        fread(osrelease,filesize,1,myfile);
+        fclose(myfile);
+        remove("./osrelease");
+    }
+    else{
+        osrelease = new char[8];
+        strcpy(osrelease,"Unknown");
+    }
+    
+    myfile= fopen ("./machine","rt");    
+    if (myfile){
+        fseek(myfile,0,2);
+        int filesize=ftell(myfile);
+        fseek(myfile,0,0);
+        machine = new char[filesize+1];
+        fread(machine,filesize,1,myfile);
+        fclose(myfile);
+        remove("./machine");
+    }
+    else{
+        machine = new char[8];
+        strcpy(machine,"Unknown");
+    }
+    
+    
+    ostype[strlen(ostype)-1]=0;
+    osrelease[strlen(osrelease)-1]=0;
+    machine[strlen(machine)-1]=0;
+    osname= new char [strlen(ostype) + strlen(osrelease) + 2];
     strcpy(osname,ostype);
-	osname[strlen(osname)+1]=0x00;
-	osname[strlen(osname)]=0x20;
-	strcpy(osname+strlen(osname),osrelease);
-	
-	
+    osname[strlen(osname)+1]=0x00;
+    osname[strlen(osname)]=0x20;
+    strcpy(osname+strlen(osname),osrelease);
+    
+    
 }
 #endif

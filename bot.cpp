@@ -47,221 +47,230 @@ using namespace std;
 extern IRCclient IRC;
 //#define channels IRC.channels
 //lelijk
-//------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------    
 //------------------------------------------------------------------------------
 
 bool isop(char *channel, char *nick){
-	int a=0,b=0,c=0;
-	IRC.getChannelNick(a,b,channel,nick);
-	if ( a != -1) { 
-		if ( b != -1 ) {
-			while ( c < strlen(IRC.channels[a]->users[b]->mode) ){
-				// ~(q)&(a)@(o)%(h)
+    int a=0,b=0,c=0;
+    IRC.getChannelNick(a,b,channel,nick);
+    if ( a != -1) { 
+        if ( b != -1 ) {
+            while ( c < strlen(IRC.channels[a]->users[b]->mode) ){
+                // ~(q)&(a)@(o)%(h)
                 if (IRC.channels[a]->users[b]->mode[c]== '~') return true;
-				if (IRC.channels[a]->users[b]->mode[c]== '&') return true;
-				if (IRC.channels[a]->users[b]->mode[c]== '@') return true;
-				if (IRC.channels[a]->users[b]->mode[c]== '%') return true;
-				c++; // staat hier vanwege mode[c]
-			} 
-		} 
-	}// printf("\n");
+                if (IRC.channels[a]->users[b]->mode[c]== '&') return true;
+                if (IRC.channels[a]->users[b]->mode[c]== '@') return true;
+                if (IRC.channels[a]->users[b]->mode[c]== '%') return true;
+                c++; // staat hier vanwege mode[c]
+            } 
+        } 
+    }// printf("\n");
     return false;
 } 
 //------------------------------------------------------------------------------
 
 bool botisop(char *channel){
      // naar bot
-	return isop(channel, IRC.botnick);
+    return isop(channel, IRC.botnick);
 }
 //------------------------------------------------------------------------------
 bool isService(char *nick){
-	printf("%s ",nick);
-	if (strlen(nick)>4)	
-		if (strcasecmp(nick+(strlen(nick)-4),"serv")==0) return true;
-	return false;
+    printf("%s ",nick);
+    if (strlen(nick)>4)    
+        if (strcasecmp(nick+(strlen(nick)-4),"serv")==0) return true;
+    return false;
 }
 //------------------------------------------------------------------------------
 
 bool iscsregged(char *mode){
      // naar bot?
-	int c=0;
-	while ( c < strlen(mode)){
-		if (mode[c]== 'r') return true;
-		c++; 
-	}
+    int c=0;
+    while ( c < strlen(mode)){
+        if (mode[c]== 'r') return true;
+        c++; 
+    }
 return false;
 }
 
-bool iscsregged(char *channel,char *nick){	
+bool iscsregged(char *channel,char *nick){    
      //naar bot
-	int a,b,c;
-	IRC.getChannelNick(a,b,channel,nick);
-	if ( a != -1) { 
-		if ( b != -1 ) {
-			for ( c = 0; c < strlen(IRC.channels[a]->users[b]->mode);){
-				
-				if (IRC.channels[a]->users[b]->mode[c]== 'r') return true;
-				c++; // staat hier vanwege mode[c]
-			}
-		}else printf("nick not found\n");
-	}else printf("channel not found\n");
+    int a,b,c;
+    IRC.getChannelNick(a,b,channel,nick);
+    if ( a != -1) { 
+        if ( b != -1 ) {
+            for ( c = 0; c < strlen(IRC.channels[a]->users[b]->mode);){
+                
+                if (IRC.channels[a]->users[b]->mode[c]== 'r') return true;
+                c++; // staat hier vanwege mode[c]
+            }
+        }else printf("nick not found\n");
+    }else printf("channel not found\n");
     return false;
 }
 //------------------------------------------------------------------------------
 
 void botcommand(int type,char *nick, char *host, char *channel, char *data){
-	
-	if (isService(nick)) return; // lijkt nu me niet. maar later....
-		
-	int a,b;	
-	IRC.getChannelNick(a,b,channel,nick); 	
-	char *target;
-	if (strcasecmp(channel,IRC.botnick)==0 ){ /* message in prive */ 
-		target = new char[1+strlen(nick)];
-		strcpy(target,nick);
-	}else{
-		target = new char[1+strlen(channel)];
-		strcpy(target,channel);
-	}
+    
+    if (isService(nick)) return; // lijkt nu me niet. maar later....
+        
+    int a,b;    
+    IRC.getChannelNick(a,b,channel,nick);     
+    char *target;
+    if (strcasecmp(channel,IRC.botnick)==0 ){ /* message in prive */ 
+        target = new char[1+strlen(nick)];
+        strcpy(target,nick);
+    }else{
+        target = new char[1+strlen(channel)];
+        strcpy(target,channel);
+    }
 
-	
-			
-	if (strncmp("!test",data,5)==0){
-		char temp[128]="testing, the current botnick is ";
-		strcpy(temp+strlen(temp),IRC.botnick);
-		IRC.sendPRIVMSG(target,temp);
-		return;
-	}
-	if (strncmp("!os",data,3)==0){
-		char temp[128];
-		sprintf(temp,"%s (%s %s %s)",osname, ostype, osrelease, machine);
-		IRC.sendPRIVMSG(target,temp);
-		return;
-	}	
-	
-			
-	
-	if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
-		if (strncmp("!lines",data,6)==0){
-			char *P[3]={0,0,0};	int NrP;
-			spltstr(data,NrP,P,2);
-	    a=-1;b=-1;
-			printf("user:%s channel:%s\n",P[1],channel);
-		if (P[1]) IRC.getChannelNick(a,b,channel,P[1]);	
-			if ( a != -1){
-				if ( b != -1){
-					char temp[128];
-					sprintf(temp,"%s has said %d lines.",P[1], 
-						IRC.channels[a]->users[b]->lines);
-					IRC.sendPRIVMSG(target,temp);
-					if ( IRC.channels[a]->users[b]->lines < 50){
-						sprintf(temp,"%s will be voiced after %d lines.",P[1], 
-						50 - IRC.channels[a]->users[b]->lines);
-					IRC.sendPRIVMSG(target,temp);}
-				} printf("user unknown\n");
-			} printf("channel unknown\n");   return;
-		}
-//------------------------------------------------------------------------------	
-	if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
-		if (strncmp("!seen",data,5)==0){
-			char *P[3]={0,0,0};	int NrP;
-			spltstr(data,NrP,P,2);
-	    a=-1;b=-1;
-			printf("user:%s channel:%s\n",P[1],channel);
-		if (P[1])	IRC.getChannelNick(a,b,channel,P[1]);
-			if ( a != -1){
-				if ( b != -1){
-					char temp[128];
-					sprintf(temp,
-		"%s was seen %d sec ago",
-			   P[1],time(NULL)-IRC.channels[a]->users[b]->lasttime);
-				IRC.sendPRIVMSG(channel,temp);
-			
-			switch (IRC.channels[a]->users[b]->lasttype){
-			case 'J' : 
-				sprintf(temp,"%s entered the chatroom", P[1]);
-				break;
-			case 'T' : 
-				sprintf(temp,"%s said %s",
-				       P[1],IRC.channels[a]->users[b]->lastsaid) ;
-				break;
-			case 'A' : 
-				sprintf(temp,"%s did * %s %s *",
-				       P[1],P[1],IRC.channels[a]->users[b]->lastsaid) ;
-				break;
-			case 'P' : 
-				sprintf(temp,"%s parted (%s)",
-			    P[1],IRC.channels[a]->users[b]->lastsaid);
-				break;
-			case 'Q' : 
-				sprintf(temp,"%s quit (%s)",
-			    P[1],IRC.channels[a]->users[b]->lastsaid);
-				break;
-			case 'K' : 
-				sprintf(temp,"%s was kicked (%s)",
-			    P[1],IRC.channels[a]->users[b]->lastsaid);
-				break;
-			case 'k' : 
-				sprintf(temp,"%s was killed (%s)",
-			    P[1],IRC.channels[a]->users[b]->lastsaid);
-				break;
-			}
-				IRC.sendPRIVMSG(channel,temp);
-			}else 
-			{
-				char temp[128];
-				sprintf(temp,"I\'m sorry, I haven\'t seen %s",P[1]);
-				IRC.sendPRIVMSG(channel,temp);
-			}
-			
-		}
-		return;
-	}		
-	
-	
-	if (strncmp("!ul",data,3)==0){
-		char temp[128];
-		if (strcmp(channel,IRC.botnick)!=0 )
-			sprintf(temp,"Your userlevel is %d, mode %s",
+    
+            
+    if (strncmp("!test",data,5)==0){
+        char temp[128]="testing, the current botnick is ";
+        strcpy(temp+strlen(temp),IRC.botnick);
+        IRC.sendPRIVMSG(target,temp);
+        delete[] target;
+        return;
+    }
+    if (strncmp("!os",data,3)==0){
+        char temp[128];
+        sprintf(temp,"%s (%s %s %s)",osname, ostype, osrelease, machine);
+        IRC.sendPRIVMSG(target,temp);
+        delete[] target;
+        return;
+    }    
+    
+            
+    
+    if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
+        if (strncmp("!lines",data,6)==0){
+            char *P[3]={0,0,0};    int NrP;
+            spltstr(data,NrP,P,2);
+        a=-1;b=-1;
+            printf("user:%s channel:%s\n",P[1],channel);
+        if (P[1]) IRC.getChannelNick(a,b,channel,P[1]);    
+            if ( a != -1){
+                if ( b != -1){
+                    char temp[128];
+                    sprintf(temp,"%s has said %d lines.",P[1], 
+                        IRC.channels[a]->users[b]->lines);
+                    IRC.sendPRIVMSG(target,temp);
+                    if ( IRC.channels[a]->users[b]->lines < 50){
+                        sprintf(temp,"%s will be voiced after %d lines.",P[1], 
+                        50 - IRC.channels[a]->users[b]->lines);
+                    IRC.sendPRIVMSG(target,temp);}
+                } printf("user unknown\n");
+            } printf("channel unknown\n");   delete[] target; return;
+        }
+//------------------------------------------------------------------------------
+    if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
+        if (strncmp("!seen",data,5)==0){
+            char *P[3]={0,0,0};    int NrP;
+            spltstr(data,NrP,P,2);
+        a=-1;b=-1;
+            printf("user:%s channel:%s\n",P[1],channel);
+        if (P[1])    IRC.getChannelNick(a,b,channel,P[1]);
+            if ( a != -1){
+                if ( b != -1){
+                    char temp[128];
+                    sprintf(temp,
+        "%s was seen %d sec ago",
+               P[1],time(NULL)-IRC.channels[a]->users[b]->lasttime);
+                IRC.sendPRIVMSG(channel,temp);
+
+            switch (IRC.channels[a]->users[b]->lasttype){
+            case 'J' :
+                sprintf(temp,"%s entered the chatroom", P[1]);
+                break;
+            case 'T' :
+                sprintf(temp,"%s said %s",
+                       P[1],IRC.channels[a]->users[b]->lastsaid) ;
+                break;
+            case 'A' :
+                sprintf(temp,"%s did * %s %s *",
+                       P[1],P[1],IRC.channels[a]->users[b]->lastsaid) ;
+                break;
+            case 'P' :
+                sprintf(temp,"%s parted (%s)",
+                P[1],IRC.channels[a]->users[b]->lastsaid);
+                break;
+            case 'Q' :
+                sprintf(temp,"%s quit (%s)",
+                P[1],IRC.channels[a]->users[b]->lastsaid);
+                break;
+            case 'K' :
+                sprintf(temp,"%s was kicked (%s)",
+                P[1],IRC.channels[a]->users[b]->lastsaid);
+                break;
+            case 'k' :
+                sprintf(temp,"%s was killed (%s)",
+                P[1],IRC.channels[a]->users[b]->lastsaid);
+                break;
+            }
+                IRC.sendPRIVMSG(channel,temp);
+            }else
+            {
+                char temp[128];
+                sprintf(temp,"I\'m sorry, I haven\'t seen %s",P[1]);
+                IRC.sendPRIVMSG(channel,temp);
+            }
+
+        }
+        delete[] target;
+        return;
+    }
+
+
+    if (strncmp("!ul",data,3)==0){
+        char temp[128];
+        if (strcmp(channel,IRC.botnick)!=0 )
+            sprintf(temp,"Your userlevel is %d, mode %s",
                     IRC.channels[a]->users[b]->userlevel,
                     IRC.channels[a]->users[b]->mode);
-		else 
-			sprintf(temp,"Your userlevel is %d, mode %s",
+        else
+            sprintf(temp,"Your userlevel is %d, mode %s",
                     IRC.pm.userlevel,
                     IRC.pm.mode);
-		IRC.sendPRIVMSG(target,temp);
-		printf("!ul\n");
-		return;
-	}
-	int ul=0;
-	
-	if (strcmp(channel,IRC.botnick)==0 ) 
-		ul = IRC.pm.userlevel; 
-	else
-		ul = IRC.channels[a]->users[b]->userlevel;
-	if (ul > 50 ){
-		if (strncmp("!nick",data,5)==0){
-            char *P[3];	int NrP;
-			spltstr(data,NrP,P,2);
+        IRC.sendPRIVMSG(target,temp);
+        printf("!ul\n");
+        delete[] target;
+        return;
+    }
+    int ul=0;
+
+    if (strcmp(channel,IRC.botnick)==0 )
+        ul = IRC.pm.userlevel;
+    else
+        ul = IRC.channels[a]->users[b]->userlevel;
+
+    if (ul > 50 ){
+        if (strncmp("!nick",data,5)==0){
+            char *P[3];    int NrP;
+            spltstr(data,NrP,P,2);
             IRC.sendNICK(P[1]);
+            delete[] target; return;
         }
-	
-		if (strncmp("!join",data,5)==0){
-            char *P[3];	int NrP;
-			spltstr(data,NrP,P,2);
-			IRC.joinchannel(P[1]);
-		}
-		if (strncmp("!part",data,5)==0){
-            char *P[3];	int NrP;
-			spltstr(data,NrP,P,2);
-			if (NrP) IRC.partchannel(P[1]); else IRC.partchannel(channel);
-		}
-		if (strncmp("!quit",data,5)==0)
-			IRC.sendQUIT(NULL);
-	}
+
+        if (strncmp("!join",data,5)==0){
+            char *P[3];    int NrP;
+            spltstr(data,NrP,P,2);
+            IRC.joinchannel(P[1]);
+            delete[] target; return;
+        }
+        if (strncmp("!part",data,5)==0){
+            char *P[3];    int NrP;
+            spltstr(data,NrP,P,2);
+            if (NrP) IRC.partchannel(P[1]); else IRC.partchannel(channel);
+            delete[] target; return;
+        }
+        if (strncmp("!quit",data,5)==0)
+            IRC.sendQUIT(NULL);
+            delete[] target; return;
+    }
 }
 //------------------------------------------------------------------------------
 //void verwerk (char type, char *nick, char *host, char *to, char *data){
-	//		if (strcasecmp(to,botnick)==0){ // verander dit, botnick variable
+    //        if (strcasecmp(to,botnick)==0){ // verander dit, botnick variable
 
 //}

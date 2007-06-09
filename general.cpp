@@ -34,7 +34,7 @@ freely, subject to the following restrictions:
 
 void spltstr(char *data, int &NrParam, char **Param,char nrspace){
     
-    char teller=0;
+    //char teller=0;
     char *Ptr = data; 
     bool done=false;
     NrParam = 0;

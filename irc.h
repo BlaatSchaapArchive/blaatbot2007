@@ -4,6 +4,11 @@
 //#define loud
 #define indreanet
 //------------------------------------------------------------------------------
+// begin borland compilation fix
+#if defined(__BORLANDC__) || defined(__BCPLUSPLUS__)
+#define strcasecmp strcmpi
+#endif
+// end borland compilation fix
 //------------------------------------------------------------------------------	
 #ifdef __WIN32__              // compile for WIN32
 #include <winsock.h>          // using winsock     
