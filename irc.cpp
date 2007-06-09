@@ -863,12 +863,14 @@ int IRCclient::connect_irc(char *ip, int port){
     SOCKADDR_IN saServer;             // WINSOCK
     WSADATA wsda;                     
 
-//    WSAStartup(MAKEWORD(1,1), &wsda);
+// WSAStartup(MAKEWORD(1,1), &wsda);
 // compensatie voor windows 3.x kent geen makeword
 // 1 = 1.0
 // 1.1 = 257
 
     WSAStartup(1, &wsda);
+    
+// We vragen dus WinSock 1.0 aan
 
 
     
@@ -881,15 +883,17 @@ printf("Connecting to %s:%d...\n",ip,port);
     
     
     sServer=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if(sServer==SOCKET_ERROR)
+    if(sServer)
         return -1;
+
+
 
     saServer.sin_addr.s_addr=inet_addr(ip);
     saServer.sin_family=AF_INET;
     saServer.sin_port=htons(port);
-    if(connect(sServer, (struct sockaddr *)&saServer, sizeof(saServer))\
-        ==SOCKET_ERROR)
+    if(connect(sServer, (struct sockaddr *)&saServer, sizeof(saServer)))
         return -1;
+
 //------------------------------------------------------------------------------
   return 0;
 }

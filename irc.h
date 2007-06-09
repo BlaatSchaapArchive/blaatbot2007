@@ -1,6 +1,6 @@
 #ifndef _IRC_H
 #define _IRC_H
-//------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------        
 //#define loud
 #define indreanet
 //------------------------------------------------------------------------------
@@ -10,17 +10,16 @@
 #if defined(__BORLANDC__) || defined(__BCPLUSPLUS__)
 #define strcasecmp strcmpi
 #endif
-//------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------        
 // Open Watcom compiler heeft geen __WIN32__ gedefineerd
 #ifdef __NT__
 #define __WIN32__
 #endif    
-//------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------        
 
 //#ifdef __WIN32__              // compile for WIN32
-//#if defined(__WIN32__) || defined(_Windows) // alle windows systemen
 
-#if defined(__WIN32__) || defined(__WIN64__) // alleen 32 of 64 bit .. 
+#if defined (__WINDOWS__) || defined(__WIN32__) || defined(__WIN64__) 
 #include <winsock.h>          // using winsock     
 #else                         // compile for other operating systems 
 #include <sys/socket.h>       // using BSD sockets
@@ -29,7 +28,7 @@
 #include <arpa/inet.h>      
 #define SOCKET int 
 #define SOCKET_ERROR -1
-#endif	
+#endif  
 //------------------------------------------------------------------------------
 #define CMES 0
 #define AMES 1
@@ -45,80 +44,80 @@
 #define KICK 14
 #define KILL 15
 #define QUIT 16
-//------------------------------------------------------------------------------	
-	struct ircuser{ 
-    	char *user; 
-		char *host; 
-		char *server;
-    	char *nick;     
-		char *mode; 
-		char *realname; 
-		time_t lasttime; 
-		char lasttype;
-		char *lastsaid; 
-		int  lines; 
-		char *oldnick; 
-		char userlevel;
-	};
-//------------------------------------------------------------------------------	
-	struct ircchannel{
-		char *channel; 
-		vector <ircuser *> users; 
-		FILE *logfile;
-	};
+//------------------------------------------------------------------------------        
+        struct ircuser{ 
+        char *user; 
+                char *host; 
+                char *server;
+        char *nick;     
+                char *mode; 
+                char *realname; 
+                time_t lasttime; 
+                char lasttype;
+                char *lastsaid; 
+                int  lines; 
+                char *oldnick; 
+                char userlevel;
+        };
+//------------------------------------------------------------------------------        
+        struct ircchannel{
+                char *channel; 
+                vector <ircuser *> users; 
+                FILE *logfile;
+        };
 
 //------------------------------------------------------------------------------
 #include <vector>
 
 class IRCclient{
-	
+        
 private:
 
-	void splitnickuser ( char *Ptr, char *&nick, char *&mask);
-	void splituserhost ( char *Ptr, char *&user, char *&host );
-	void userlist (char *channel, char *user, char *host, char *server,
+        void splitnickuser ( char *Ptr, char *&nick, char *&mask);
+        void splituserhost ( char *Ptr, char *&user, char *&host );
+        void userlist (char *channel, char *user, char *host, char *server,
                char *nick,    char *mode, char *realname);
-	void irc_received(char *data);
-	void receivedata();
-	void irc_message (char type, char *nick, char *host, char *to, char *data);
-	SOCKET sServer;
-	
-	FILE *prive;  // en die file in het dingetje .... 
-	
+        void irc_received(char *data);
+        void receivedata();
+        void irc_message (char type, char *nick, char *host, char *to, char *data);
+        SOCKET sServer;
+        
+        FILE *prive;  // en die file in het dingetje .... 
+        
 
 public:
-	vector <ircchannel*> channels;
+        vector <ircchannel*> channels;
 
-//	vector <ircuser *> pm; // allemaal bijhouden ... of een temp object
+//      vector <ircuser *> pm; // allemaal bijhouden ... of een temp object
 // maybe zelfs een 'temp-channel' als pm kanaal???
     ircuser pm;
 
-	char *botnick;
+        char *botnick;
 
-	void joinchannel(char *channel);
-	void partchannel(char *channel);
+        void joinchannel(char *channel);
+        void partchannel(char *channel);
 
-	void sendNICK(char *nick);
-	void sendPRIVMSG(char *target, char *message);
-	void sendNOTICE(char *target, char *message);
-	void sendACTION(char *target, char *message);
-	void sendAWAY(char *reason);
-	void sendBACK();
-	void sendQUIT(char *reason);
+        void sendNICK(char *nick);
+        void sendPRIVMSG(char *target, char *message);
+        void sendNOTICE(char *target, char *message);
+        void sendACTION(char *target, char *message);
+        void sendAWAY(char *reason);
+        void sendBACK();
+        void sendQUIT(char *reason);
 
-	char userlevel (char *mode, char *channel, char *nick, char *host);
-	void setmode(char *channel, char *nick, char *mode);
+        char userlevel (char *mode, char *channel, char *nick, char *host);
+        void setmode(char *channel, char *nick, char *mode);
 
-	void getChannelNick (int &a, int &b, char *channel, char *nick);
+        void getChannelNick (int &a, int &b, char *channel, char *nick);
 
-	void login ();
-	int connect_irc(char *ip, int port);
-	
-	
+        void login ();
+        int connect_irc(char *ip, int port);
+        
+        
 };
-//------------------------------------------------------------------------------	
-	//extern char *botnick;
-	//extern SOCKET sServer;
-	extern char *ostype,*osrelease,*osname,*machine;
+//------------------------------------------------------------------------------        
+        //extern char *botnick;
+        //extern SOCKET sServer;
+        extern char *ostype,*osrelease,*osname,*machine;
 //------------------------------------------------------------------------------
 #endif /* _IRC_H */

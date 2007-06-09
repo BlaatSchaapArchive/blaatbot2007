@@ -64,5 +64,6 @@ int main(int argc, char *argv[]){
     delete[] ostype;delete[] osrelease;delete[] osname;delete[] machine;
 
     }
+    else printf("Connection error!\n");
 }
 //------------------------------------------------------------------------------
