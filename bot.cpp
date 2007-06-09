@@ -116,7 +116,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 	int a,b;	
 	IRC.getChannelNick(a,b,channel,nick); 	
 	char *target;
-	if (strcmp(channel,IRC.botnick)==0 ){ /* message in prive */ 
+	if (strcasecmp(channel,IRC.botnick)==0 ){ /* message in prive */ 
 		target = new char[1+strlen(nick)];
 		strcpy(target,nick);
 	}else{
@@ -154,7 +154,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 					sprintf(temp,"%s has said %d lines.",P[1], 
 						IRC.channels[a]->users[b]->lines);
 					IRC.sendPRIVMSG(target,temp);
-					if ( IRC.channels[a]->users[b]->lines < 50);{
+					if ( IRC.channels[a]->users[b]->lines < 50){
 						sprintf(temp,"%s will be voiced after %d lines.",P[1], 
 						50 - IRC.channels[a]->users[b]->lines);
 					IRC.sendPRIVMSG(target,temp);}

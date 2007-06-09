@@ -115,7 +115,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 		if ( a == -1 ) return;
 		if ( b == -1 ) return;
 		delete (channels[a]->users[b]->lastsaid); 
-		channels[a]->users[b]->lasttype=type;
+		//channels[a]->users[b]->lasttype=type;
 		channels[a]->users[b]->lastsaid = new char[1+strlen(data)];
 	    strcpy(channels[a]->users[b]->lastsaid,data);
 		channels[a]->users[b]->lasttime = time(NULL);
@@ -189,6 +189,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 			}
 			a++;
 		}
+		sprintf(temp,"WHO %s\xd\xa",to);
 	}
 	
 	if (type==PART){
@@ -487,7 +488,7 @@ char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
 	if (strcasecmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
 		return 100; // school 0160 chat4all
 	
-	if (strcmp(channel,"")!=0) //pm
+	if (strcasecmp(channel,"")!=0) //pm
     if (isop(channel,nick)) return 50; //->test
 	
 	if (iscsregged(mode)) return 25; //debug??
@@ -777,8 +778,7 @@ void IRCclient::irc_received(char *data){
 }
 
 
-void IRCclient::login ()
-{
+void IRCclient::login (){
 	botnick = new char[1+sizeof("BlaatBot2007")];
     sprintf(botnick,"BlaatBot2007");
 

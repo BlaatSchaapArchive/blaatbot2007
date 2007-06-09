@@ -28,6 +28,8 @@ freely, subject to the following restrictions:
 --------------------------------------------------------------------------------
 
 
+  stripmirc;
+
 */
 
 void spltstr(char *data, int &NrParam, char **Param,char nrspace){
