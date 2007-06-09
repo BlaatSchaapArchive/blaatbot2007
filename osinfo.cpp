@@ -181,7 +181,7 @@ strcpy(machine,machine_);
 
 }
 #elif defined (__OS2__)
-
+// OS/2
 #include <stdio.h>
 #include <string.h>
 
@@ -201,6 +201,26 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
 
     
 
+#elif defined (__WINDOWS__)
+// Win16
+
+#include <stdio.h>
+#include <string.h>
+
+void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+ 
+     // ff onderzoeken
+    ostype = new char [6];
+    strcpy (ostype, "Win16" );
+    osname = new char [6];
+    strcpy (osname, "Win16" );
+    osrelease = new char [4];
+    strcpy ( osrelease, "N/A" );
+    machine = new char [4];
+    strcpy ( machine , "N/A" ); 
+}
+
+    
 #else
 #include <cstdlib>
 #include <iostream>

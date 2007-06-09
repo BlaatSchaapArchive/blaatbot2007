@@ -859,10 +859,19 @@ void IRCclient::receivedata(){
 
 int IRCclient::connect_irc(char *ip, int port){
 //#ifdef __WIN32__
-#if defined(__WIN32__) || defined(__WIN64__)
+#if defined(__WIN32__) || defined(__WIN64__) || defined (__WINDOWS__)
     SOCKADDR_IN saServer;             // WINSOCK
     WSADATA wsda;                     
-    WSAStartup(MAKEWORD(1,1), &wsda); 
+
+//    WSAStartup(MAKEWORD(1,1), &wsda);
+// compensatie voor windows 3.x kent geen makeword
+// 1 = 1.0
+// 1.1 = 257
+
+    WSAStartup(1, &wsda);
+
+
+    
 #else     
     struct sockaddr_in saServer;      // BSD SOCKETS
 #endif   
