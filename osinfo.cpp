@@ -36,7 +36,9 @@ TODO :
 */
 
 
-#ifdef __WIN32__              // compile for WIN32
+//#ifdef __WIN32__              // compile for WIN32
+#if defined(__WIN32__) || defined(__WIN64__) // 32 of 64
+
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>

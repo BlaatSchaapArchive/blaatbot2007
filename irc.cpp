@@ -858,7 +858,8 @@ void IRCclient::receivedata(){
 }
 
 int IRCclient::connect_irc(char *ip, int port){
-#ifdef __WIN32__
+//#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WIN64__)
     SOCKADDR_IN saServer;             // WINSOCK
     WSADATA wsda;                     
     WSAStartup(MAKEWORD(1,1), &wsda); 

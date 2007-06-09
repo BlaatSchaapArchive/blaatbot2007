@@ -10,7 +10,10 @@
 #endif
 // end borland compilation fix
 //------------------------------------------------------------------------------	
-#ifdef __WIN32__              // compile for WIN32
+//#ifdef __WIN32__              // compile for WIN32
+//#if defined(__WIN32__) || defined(_Windows) // alle windows systemen
+
+#if defined(__WIN32__) || defined(__WIN64__) // alleen 32 of 64 bit .. 
 #include <winsock.h>          // using winsock     
 #else                         // compile for other operating systems 
 #include <sys/socket.h>       // using BSD sockets
