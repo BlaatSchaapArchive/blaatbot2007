@@ -35,12 +35,12 @@ TODO :
 */
 #include "osinfo.h" 
 
-//------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------        
 // Open Watcom compiler heeft geen __WIN32__ gedefineerd
 #ifdef __NT__
 #define __WIN32__
 #endif    
-//------------------------------------------------------------------------------	
+//------------------------------------------------------------------------------        
 #if defined(__WIN32__) || defined(__WIN64__) // 32 of 64
 
 #include <windows.h>
@@ -180,6 +180,27 @@ machine = new char[strlen(machine_)+1];
 strcpy(machine,machine_);
 
 }
+#elif defined (__OS2__)
+
+#include <stdio.h>
+#include <string.h>
+
+void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+    // moet nog onderzoeken hoe dit onder OS/2 werkt. Heb momenteel geen
+    // OS/2 installatie.
+    ostype = new char [5];
+    strcpy (ostype, "OS/2" );
+    osname = new char [5];
+    strcpy (osname, "OS/2" );
+    osrelease = new char [4];
+    strcpy ( osrelease, "N/A" );
+    machine = new char [4];
+    strcpy ( machine , "N/A" );
+}
+    
+
+    
+
 #else
 #include <cstdlib>
 #include <iostream>
