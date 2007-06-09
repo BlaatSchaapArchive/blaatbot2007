@@ -1,4 +1,3 @@
-
 /*
 BlaatSchaap Coding Projects Summer 2007 : Detect Current OS
 
@@ -35,6 +34,7 @@ TODO :
 
 */
 
+#include "osinfo.h" 
 
 //#ifdef __WIN32__              // compile for WIN32
 #if defined(__WIN32__) || defined(__WIN64__) // 32 of 64
