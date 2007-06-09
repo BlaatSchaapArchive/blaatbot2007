@@ -57,7 +57,7 @@ using namespace std;
 #include "bot.h"
 #include "osinfo.h"
 #include "general.h"
-#include "main.h" 
+//#include "main.h" 
 
 //vector <ircchannel*> channels;
 //char *botnick;
