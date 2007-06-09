@@ -33,10 +33,14 @@ TODO :
 
 
 */
-
 #include "osinfo.h" 
 
-//#ifdef __WIN32__              // compile for WIN32
+//------------------------------------------------------------------------------	
+// Open Watcom compiler heeft geen __WIN32__ gedefineerd
+#ifdef __NT__
+#define __WIN32__
+#endif    
+//------------------------------------------------------------------------------	
 #if defined(__WIN32__) || defined(__WIN64__) // 32 of 64
 
 #include <windows.h>
