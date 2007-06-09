@@ -4,12 +4,23 @@
 //#define loud
 #define indreanet
 //------------------------------------------------------------------------------
-// begin borland compilation fix
+// Borland C++ Builder 6 herkent strcasecmp niet, dit werkt wel op de 
+// GNU en Open Watcom  compilers. strcmpi lijkt precies hetzelfde te doen
+// dus op deze manier word dit probleem verholpen.
 #if defined(__BORLANDC__) || defined(__BCPLUSPLUS__)
 #define strcasecmp strcmpi
 #endif
-// end borland compilation fix
 //------------------------------------------------------------------------------	
+// Open Watcom compiler heeft geen __WIN32__ gedefineerd
+// Dus moeten we dat zelf even doen. Later nog onderzoeken
+// Dit is een tijdelijke oplossing, want de WatCom Compiler
+// kent nog meerdere targets die om deze manier niet zullen
+// compilen. (Win16, OS/2, DOS .... )
+#if defined (__WATCOMC__) || (__WATCOM__)
+#define __WIN32__
+#endif    
+//------------------------------------------------------------------------------	
+
 //#ifdef __WIN32__              // compile for WIN32
 //#if defined(__WIN32__) || defined(_Windows) // alle windows systemen
 
