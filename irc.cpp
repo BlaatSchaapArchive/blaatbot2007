@@ -883,7 +883,8 @@ printf("Connecting to %s:%d...\n",ip,port);
     
     
     sServer=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if(sServer)
+    //if(sServer==SOCKET_ERROR)
+	if (!sServer)
         return -1;
 
 
@@ -891,7 +892,9 @@ printf("Connecting to %s:%d...\n",ip,port);
     saServer.sin_addr.s_addr=inet_addr(ip);
     saServer.sin_family=AF_INET;
     saServer.sin_port=htons(port);
-    if(connect(sServer, (struct sockaddr *)&saServer, sizeof(saServer)))
+    //if(connect(sServer, (struct sockaddr *)&saServer, sizeof(saServer))\
+    //	==SOCKET_ERROR)
+	if(connect(sServer, (struct sockaddr *)&saServer, sizeof(saServer)))
         return -1;
 
 //------------------------------------------------------------------------------
