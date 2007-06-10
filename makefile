@@ -13,7 +13,7 @@ RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before bscp-cbot all-after
+all: all-before cbot all-after
 
 
 clean: clean-custom
