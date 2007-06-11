@@ -37,6 +37,8 @@ freely, subject to the following restrictions:
 #include <stdio.h>
 #include <vector>
 
+#include "fcom.h"
+
 using namespace std;
 char *ostype,*osrelease,*osname,*machine;
 
@@ -50,6 +52,8 @@ IRCclient IRC;
 int main(int argc, char *argv[]){
     getOSinfo(ostype,osrelease,osname,machine);
     int port = 6667;
+    
+    ReadFile();
 #ifdef indreanet    
     char *ip="195.28.165.175";
 #else        

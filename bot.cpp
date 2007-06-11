@@ -40,6 +40,7 @@ using namespace std;
 #include "osinfo.h"
 #include "general.h"
 #include "irc.h"
+#include "fcom.h"
 
 //using namespace IRCclient;
 
@@ -221,6 +222,9 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
         return;
     }
 
+
+
+
 	//if (strncmp("!id",data,3)==0) IRC.sendPRIVMSG("nickserv","identify bscp2007");
     //test
 	
@@ -265,11 +269,27 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
             spltstr(data,NrP,P,2);
             if (NrP) IRC.partchannel(P[1]); else IRC.partchannel(channel);
             delete[] target; return;
-        }
-        if (strncmp("!quit",data,5)==0)
+        } 
+        if (strncmp("!quit",data,5)==0){
             IRC.sendQUIT(NULL);
             delete[] target; return;
+        }
+        printf("blah!\n");
+        char *P[3]={NULL,NULL,NULL};    int NrP;
+        spltstr(data,NrP,P,2);
+        char *etemp=antwoord(P[0]+1, nick ,P);
+        if (etemp) { 
+            IRC.sendPRIVMSG(target,etemp); 
+            delete[] etemp;
+            delete[] target; 
+            return;
+        }
+printf ("nblah2\n");    
     }
+
+  
+    
+    
 }
 //------------------------------------------------------------------------------
 //void verwerk (char type, char *nick, char *host, char *to, char *data){
