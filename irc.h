@@ -2,7 +2,7 @@
 #define _IRC_H
 //------------------------------------------------------------------------------        
 //#define loud
-#define indreanet
+//#define indreanet
 //------------------------------------------------------------------------------
 // Borland C++ Builder 6 herkent strcasecmp niet, dit werkt wel op de 
 // GNU en Open Watcom  compilers. strcmpi lijkt precies hetzelfde te doen

@@ -4,8 +4,8 @@
 
 CPP  = g++
 CC   = gcc
-OBJ  = main.o osinfo.o bot.o general.o irc.o 
-LINKOBJ  = main.o osinfo.o bot.o general.o irc.o 
+OBJ  = main.o osinfo.o bot.o general.o irc.o fcom.o
+LINKOBJ  = main.o osinfo.o bot.o general.o irc.o fcom.o
 BIN  = cbot
 CXXFLAGS = $(CXXINCS)  
 CFLAGS = $(INCS)  
@@ -36,3 +36,6 @@ general.o: general.cpp
 
 irc.o: irc.cpp
 	$(CPP) -c irc.cpp -o irc.o $(CXXFLAGS)
+
+fcom.o: fcom.cpp
+	$(CPP) -c fcom.cpp -o fcom.o $(CXXFLAGS)

@@ -274,6 +274,9 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
             IRC.sendQUIT(NULL);
             delete[] target; return;
         }
+ 
+    }
+
         printf("blah!\n");
         char *P[3]={NULL,NULL,NULL};    int NrP;
         spltstr(data,NrP,P,2);
@@ -284,10 +287,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
             delete[] target; 
             return;
         }
-printf ("nblah2\n");    
-    }
-
-  
+printf ("nblah2\n");     
     
     
 }
