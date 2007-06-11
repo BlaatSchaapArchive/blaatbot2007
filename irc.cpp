@@ -175,6 +175,11 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
             delete[] botnick;
             botnick = new char[1+strlen(data)];
             strcpy(botnick,data);
+			
+			// soll ich dies auch hier machen?
+			char temp[128];
+			sprintf(temp, "MODE %s +B\xd\xa",botnick);
+			send (sServer,temp, strlen(temp), 0);
         }
         int a=0,b;
         char temp[128];
@@ -503,6 +508,9 @@ char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
     if (strcasecmp(host,"Chat4all-51B52190.xs4all.nl")==0)
         return 100; //thuis chat4all
     
+	if (strcasecmp(host,"netadmin.chatexplosion.be")==0)
+        return 100; //netadmin.chatexplosion.be
+	
     if (strcasecmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
         return 100; // school 0160 indeanet
     if (strcasecmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
@@ -798,16 +806,25 @@ void IRCclient::irc_received(char *data){
         }
         if (strncmp (Param[1],"376",3) == 0){
                printf("Ready to join\n");
+			
+			//oder hier? 	
+			//setmode(botnick,"","+B");
+			
+			
+			
+			
                #ifdef indreanet    
             sendPRIVMSG("nickserv","identify bscp2007");
             joinchannel("#bscp-testing");
             joinchannel("#test");
-            #else
-            sendPRIVMSG("nickserv","identify bscp2007");
-            joinchannel("#blaatschaap");
+			#else 
+			sendPRIVMSG("nickserv","identify bscp2007"); 
+			joinchannel("#bots");
             joinchannel("#country-roads");
-            //joinchannel("#blaat");
+            joinchannel("#blaatschaap");
+			
             #endif
+			
         }
         if (strncmp (Param[1],"433",3) == 0){
               if (NrParam == 4 ) {
@@ -839,7 +856,12 @@ void IRCclient::login (){
     sendNICK(botnick);
     sprintf(temp,"USER bscp_cbot bscp_host bscp_server :BlaatSchaap Coding Projects 2007 IRC BOT\xd\xa");
     send (sServer,temp, strlen(temp), 0);
-    receivedata();
+	
+	// oder hier?? 
+	sprintf(temp,"MODE %s +B\xd\xa",botnick);
+	send (sServer,temp, strlen(temp), 0);
+    
+	receivedata();
 }
 
 void IRCclient::receivedata(){
@@ -886,7 +908,6 @@ printf("Connecting to %s:%d...\n",ip,port);
     //if(sServer==SOCKET_ERROR)
 	if (!sServer)
         return -1;
-
 
 
     saServer.sin_addr.s_addr=inet_addr(ip);

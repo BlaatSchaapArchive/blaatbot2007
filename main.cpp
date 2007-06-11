@@ -53,7 +53,10 @@ int main(int argc, char *argv[]){
 #ifdef indreanet    
     char *ip="195.28.165.175";
 #else        
-    char *ip="62.75.201.175";
+// chat4all    char *ip="62.75.201.175";
+		
+	char *ip="195.162.192.21";
+
 #endif    
     
     if (!(IRC.connect_irc(ip,port))){                            

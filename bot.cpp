@@ -221,8 +221,10 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
         return;
     }
 
-
-    if (strncmp("!ul",data,3)==0){
+	//if (strncmp("!id",data,3)==0) IRC.sendPRIVMSG("nickserv","identify bscp2007");
+    //test
+	
+	if (strncmp("!ul",data,3)==0){
         char temp[128];
         if (strcmp(channel,IRC.botnick)!=0 )
             sprintf(temp,"Your userlevel is %d, mode %s",
