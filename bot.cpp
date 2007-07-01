@@ -286,13 +286,14 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
         char *P[3]={NULL,NULL,NULL};    int NrP;
         spltstr(data,NrP,P,2);
         //char *etemp=antwoord(P[0]+1, nick ,P);
-		char *etemp=filecommand.Reply(P[0]+1, nick ,P);
+		char *etemp=filecommand.Reply(P[0], nick ,P);
         if (etemp) { 
             IRC.sendPRIVMSG(target,etemp); 
             delete[] etemp;
             delete[] target; 
             return;
         }
+        delete[] target; 
   
     
     
