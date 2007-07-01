@@ -1,7 +1,14 @@
 #ifndef osinfo_h
 #define osinfo_h
 
-
-void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine);
+class cOS{
+	public:
+    	~cOS();
+		cOS();
+	    char *type;
+     	char *release;
+		char *name;
+     	char *machine;
+};
 
 #endif

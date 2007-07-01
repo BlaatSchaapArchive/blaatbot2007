@@ -27,6 +27,19 @@ freely, subject to the following restrictions:
     distribution.
 --------------------------------------------------------------------------------
 
+TODO : 
+	!CRASH! Bug message in private.
+	Strip mIRC colors ( general.cpp )
+	seen commands : tijd in uu:mm:ss ( bot.cpp ) (bestaat hier een functie voor)
+	Server en Channels in files
+	Userlevels in files / Security model uitwerken
+	IRCuser / IRCchannel naar klasses omschrijven.
+	FileCommands naar klasse omschrijven
+	Activeringsteken instelbaar maken
+	
+	
+	
+	
 
 */
 
@@ -40,35 +53,37 @@ freely, subject to the following restrictions:
 #include "fcom.h"
 
 using namespace std;
-char *ostype,*osrelease,*osname,*machine;
+
+//char *ostype,*osrelease,*osname,*machine;
 
 //------------------------------------------------------------------------------
 
 #include "osinfo.h"
 #include "irc.h"
 
+cOS os;
 IRCclient IRC;
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[]){
-    getOSinfo(ostype,osrelease,osname,machine);
+//    getOSinfo(ostype,osrelease,osname,machine);
     int port = 6667;
     
-    ReadFile();
-#ifdef indreanet    
+//    ReadFile();
+//#ifdef indreanet
     char *ip="195.28.165.175";
-#else        
-// chat4all    char *ip="62.75.201.175";
-		
-	char *ip="195.162.192.21";
+//#elifdef chat4all
+//	char *ip="62.75.201.175";
+//#else //chatexplosion	
+//	char *ip="195.162.192.21";
 
-#endif    
+//#endif    
     
     if (!(IRC.connect_irc(ip,port))){                            
         IRC.login ();
 //        IRC.receivedata();
         
     printf("Connection lost\n");
-    delete[] ostype;delete[] osrelease;delete[] osname;delete[] machine;
+   // delete[] ostype;delete[] osrelease;delete[] osname;delete[] machine;
 
     }
     else printf("Connection error!\n");

@@ -58,6 +58,8 @@ using namespace std;
 #include "osinfo.h"
 #include "general.h"
 
+cBot bot;
+extern cOS os;
 
 //vector <ircchannel*> channels;
 //char *botnick;
@@ -81,15 +83,15 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
         pm.nick = nick;
         //pm.mode = ?? --> is user csregged? geen check nu
         if (pm.host)
-        pm.userlevel=userlevel("","",pm.nick,pm.host);
+        pm.userlevel=bot.userlevel("","",pm.nick,pm.host);
         
         if (type==PMES) { //MESSAGE PRIVÉ
             
             fprintf(prive,"<%s> %s \n",nick,data);        
 
             // copy-paste van CMES
-            if (data[0]=='!') botcommand(type,nick, host, to, data);            
-            
+            if (data[0]==':') bot.command(type,nick, host, to, data+1);            
+            // ! --> :
             
             //if (!(isService(nick)))
             //    sendPRIVMSG(nick,"PM not implemented yet");
@@ -130,7 +132,8 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
             // uhm dit moet uit IRCclient en naar ergens de botcode
             // dus ... uhm ... moet de hele string gepasst worden
             // naar de botcode?
-            if (data[0]=='!') botcommand(type,nick, host, to, data);
+            if (data[0]==':') bot.command(type,nick, host, to, data+1);
+				// ! ==> :
         }
         if (type==AMES) {//ACTION CHANNEL
             fprintf(channels[a]->logfile,"* %s %s *\n",nick,data);
@@ -210,6 +213,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                     //blah
                     printf("BOT left %s",to);
                     fprintf(channels[a]->logfile,"BOT left %s",to);
+					/* code niet meet nodig ivm klasse 
                     int c;
                     for ( c = 0; c < channels[a]->users.size(); c++){
                         delete[] channels[a]->users[c]->user;
@@ -229,7 +233,9 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                     delete[] channels[a]->channel;
                     delete channels[a];
                     channels.erase(channels.begin()+a);
-                    
+					*/
+					delete channels[a];
+                    channels.erase(channels.begin()+a);
                 } 
                 else{ 
                     channels[a]->users[b]->lasttime=time(NULL);
@@ -253,7 +259,8 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                     //blah
                     printf("BOT got kicked %s",to);
                     fprintf(channels[a]->logfile,"BOT got kicked %s",to);
-                    int c;
+                    /* code niet meet nodig ivm destructor
+					int c;
                     for ( c = 0; c < channels[a]->users.size(); c++){
                         delete[] channels[a]->users[c]->user;
                         delete[] channels[a]->users[c]->host;
@@ -272,6 +279,10 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                     delete[] channels[a]->channel;
                     delete channels[a];
                     channels.erase(channels.begin()+a);
+					*/
+                    delete channels[a];
+                    channels.erase(channels.begin()+a);
+
                 } 
                 else{
                     channels[a]->users[b]->lasttime=time(NULL);
@@ -341,7 +352,8 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
     if (type==KILL){
         if (strcasecmp(to,botnick)==0){
             printf("BOT got killed %s",to);
-            // verify code with codeguard.
+
+			/*             code niet meer nodig
             int c,d;
                for ( c = 0 ; c < channels.size();c++){
                 for ( d = 0; d < channels[c]->users.size(); d++){
@@ -362,8 +374,11 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                 fclose(channels[c]->logfile);
                 delete[] channels[c]->channel;
                 delete channels[c];
-                //channels.erase(channels.begin()+c);
-            }
+                channels.erase(channels.begin()+c);
+				
+
+
+            }*/
         }else
         printf("%s got killed\n",nick);
         int a=0,b;
@@ -499,6 +514,7 @@ void IRCclient::sendACTION(char *target, char *message){
 }
 
 //------------------------------------------------------------------------------
+/*
 char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
 // naar bot ?
     
@@ -508,7 +524,7 @@ char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
     if (strcasecmp(host,"Chat4all-51B52190.xs4all.nl")==0)
         return 100; //thuis chat4all
     
-	if (strcasecmp(host,"netadmin.chatexplosion.be")==0)
+	if (strcasecmp(host,"blaatschaap.be")==0)
         return 100; //netadmin.chatexplosion.be
 	
     if (strcasecmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
@@ -523,6 +539,7 @@ char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
     
     return 0;
 }
+*/
 //------------------------------------------------------------------------------
 
 void IRCclient::userlist (char *channel, char *user, char *host, char *server,
@@ -538,7 +555,7 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
                     strcpy (channels[a]->users[b]->mode,mode);
                 }
                 
-                channels[a]->users[b]->userlevel=userlevel(mode,channel,nick,host);
+                channels[a]->users[b]->userlevel=bot.userlevel(mode,channel,nick,host);
                 
                 if (channels[a]->users[b]->lasttype == 'P' ||    
                     channels[a]->users[b]->lasttype == 'Q' ){
@@ -549,8 +566,8 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
             } 
             else{ // user bestaat niet in channel;
     //                 printf("mode %s\n",mode);
-                ircuser *newuser;
-                newuser = new ircuser;
+                cIRCuser *newuser;
+                newuser = new cIRCuser;
 
                 newuser->user = new char[1+strlen(user)];
                 strcpy (newuser->user,user);
@@ -574,14 +591,14 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
                 channels[a]->users.push_back(newuser);    
                 fprintf(channels[a]->logfile,"%s joined %s\n",nick,channel);
              //lelijke code!!!
-                channels[a]->users[channels[a]->users.size()-1]->userlevel=userlevel(mode,channel,nick,host);
+                channels[a]->users[channels[a]->users.size()-1]->userlevel=bot.userlevel(mode,channel,nick,host);
     
                 
             }
         }else{//channel bestaat niet
 //                printf("mode %s\n",mode);
-        ircuser *newuser;
-        newuser = new ircuser;
+        cIRCuser *newuser;
+        newuser = new cIRCuser;
 
         newuser->user = new char[1+strlen(user)];
         strcpy (newuser->user,user);
@@ -602,8 +619,8 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
         newuser->lasttype = 'J';
         //newuser->userlevel=userlevel(mode,channel,nick,host);
             
-        ircchannel *newchannel;
-        newchannel = new ircchannel;
+        cIRCchannel *newchannel;
+        newchannel = new cIRCchannel;
         newchannel->logfile = fopen (channel,"a");
         newchannel->channel = new char[1+strlen(channel)];
         strcpy (newchannel->channel,channel);
@@ -611,13 +628,13 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
         channels[channels.size()-1]->users.push_back(newuser); 
         fprintf(newchannel->logfile,"%s joined %s\n",nick,channel);
         // lelijke code
-        channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->userlevel=userlevel(mode,channel,nick,host);    
+        channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->userlevel=bot.userlevel(mode,channel,nick,host);    
     }
 }    
 //------------------------------------------------------------------------------
 
 void IRCclient::setmode(char *channel, char *nick, char *mode){
-    if (botisop(channel)) {
+    if (bot.isop(channel)) {
         char temp[128];
         sprintf(temp,"MODE %s %s %s\xd\xa",channel,mode,nick);
         send (sServer,temp,strlen(temp),0);
@@ -656,7 +673,8 @@ void IRCclient::irc_received(char *data){
 
             printf("BOT quit");
             // verify code with codeguard.
-
+/* code niet meer nodig vanwege omschrijven van struct naar klasse
+			
             int c,d;
                for ( c = 0 ; c < channels.size();c++){
                printf("Clearing %s\n",channels[c]->channel);
@@ -679,7 +697,7 @@ void IRCclient::irc_received(char *data){
                 delete[] channels[c]->channel;
                 delete channels[c];
                 //channels.erase(channels.begin()+c);
-            }
+            } */
         delete[] botnick;    
         }
     }
@@ -774,7 +792,9 @@ void IRCclient::irc_received(char *data){
                     if (strlen(Param[3])==9){
                           if (strncmp (Param[3],"\x01VERSION\x01",9) == 0){
                             printf("CTCP VERSION reveived from %s\n",nick);
-                            sendNOTICE(nick,"\x1VERSION bscp-bot pre-alpha testing\x1");
+							char temp[666];
+                            sprintf(temp,"\x1VERSION bscp-bot (Build date: %s, OS: %s)\x1",__DATE__,os.name);							  
+                            sendNOTICE(nick,temp);
                         }
                     }
                 }
@@ -808,22 +828,23 @@ void IRCclient::irc_received(char *data){
                printf("Ready to join\n");
 			
 			//oder hier? 	
-			//setmode(botnick,"","+B");
+			char temp[128];
+			sprintf(temp, "MODE %s +B\xd\xa",botnick);
+			send (sServer,temp, strlen(temp), 0);			
 			
 			
-			
-			
-               #ifdef indreanet    
-            sendPRIVMSG("nickserv","identify bscp2007");
-            joinchannel("#bscp-testing");
-            joinchannel("#test");
-			#else 
+    //           #ifdef indreanet    
+    //        sendPRIVMSG("nickserv","identify bscp2007");
+    //        joinchannel("#test");
+	//			#elifdef chat4all 
+	//		sendPRIVMSG("nickserv","identify bscp2007"); 
+	//		joinchannel("#blaatschaap");
+	//			#else
 			sendPRIVMSG("nickserv","identify bscp2007"); 
-			joinchannel("#bots");
             joinchannel("#country-roads");
-            joinchannel("#blaatschaap");
-			
-            #endif
+			joinchannel("#musixradio");
+			joinchannel("#blaatschaap");
+     //       	#endif
 			
         }
         if (strncmp (Param[1],"433",3) == 0){
@@ -920,4 +941,34 @@ printf("Connecting to %s:%d...\n",ip,port);
 
 //------------------------------------------------------------------------------
   return 0;
+}
+
+cIRCuser::cIRCuser(){
+	memset(this,0,sizeof(this));
+}
+cIRCuser::~cIRCuser(){
+	delete[] user; 
+    delete[] host; 
+    delete[] server;
+    delete[] nick;     
+    delete[] mode; 
+    delete[] realname; 
+    if (lastsaid) delete[] lastsaid; 
+    if (oldnick)  delete[] oldnick; 
+}
+
+cIRCchannel::cIRCchannel(){
+	memset(this,0,sizeof(this));
+}
+
+cIRCchannel::~cIRCchannel(){
+	fclose(logfile);
+	delete[] channel;
+	while (users.size()>0){
+		unsigned int i; 
+		i = users.size()-1;
+		delete users[i];	
+       	users.erase(users.begin()+i);
+	}
+	
 }

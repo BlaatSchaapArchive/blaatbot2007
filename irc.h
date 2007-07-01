@@ -3,6 +3,8 @@
 //------------------------------------------------------------------------------        
 //#define loud
 //#define indreanet
+#define chat4all
+
 //------------------------------------------------------------------------------
 // Borland C++ Builder 6 herkent strcasecmp niet, dit werkt wel op de 
 // GNU en Open Watcom  compilers. strcmpi lijkt precies hetzelfde te doen
@@ -45,11 +47,40 @@
 #define KILL 15
 #define QUIT 16
 //------------------------------------------------------------------------------        
+#include <vector>
+/*
         struct ircuser{ 
-        char *user; 
+        		char *user; 
                 char *host; 
                 char *server;
-        char *nick;     
+        		char *nick;     
+                char *mode; 
+                char *realname; 
+                time_t lasttime; 
+                char lasttype;
+                char *lastsaid; 
+                int  lines; 
+                char *oldnick; 
+                char userlevel;
+        };
+		
+        struct ircchannel{
+                char *channel; 
+                vector <ircuser *> users; 
+                FILE *logfile;
+        };
+
+		
+*/
+        class cIRCuser{ 
+			public:
+        		cIRCuser();	
+				~cIRCuser();
+			
+				char *user; 
+                char *host; 
+                char *server;
+        		char *nick;     
                 char *mode; 
                 char *realname; 
                 time_t lasttime; 
@@ -60,14 +91,17 @@
                 char userlevel;
         };
 //------------------------------------------------------------------------------        
-        struct ircchannel{
-                char *channel; 
-                vector <ircuser *> users; 
+        class cIRCchannel{
+			public:
+				cIRCchannel();
+				~cIRCchannel();
+				char *channel; 
+                vector <cIRCuser *> users; 
                 FILE *logfile;
         };
 
 //------------------------------------------------------------------------------
-#include <vector>
+
 
 class IRCclient{
         
@@ -86,11 +120,11 @@ private:
         
 
 public:
-        vector <ircchannel*> channels;
+        vector <cIRCchannel*> channels;
 
 //      vector <ircuser *> pm; // allemaal bijhouden ... of een temp object
 // maybe zelfs een 'temp-channel' als pm kanaal???
-    ircuser pm;
+    cIRCuser pm;
 
         char *botnick;
 
@@ -105,7 +139,7 @@ public:
         void sendBACK();
         void sendQUIT(char *reason);
 
-        char userlevel (char *mode, char *channel, char *nick, char *host);
+        //char userlevel (char *mode, char *channel, char *nick, char *host);
         void setmode(char *channel, char *nick, char *mode);
 
         void getChannelNick (int &a, int &b, char *channel, char *nick);

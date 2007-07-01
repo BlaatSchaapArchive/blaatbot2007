@@ -47,7 +47,7 @@ TODO :
 #include <stdio.h>
 #include <string.h>
 
-void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+cOS::cOS(){
 
 char ostype_[128]="Unknown";
 char osname_[128]="Unknown";
@@ -170,12 +170,12 @@ if ( (winver.dwPlatformId   == 1) ){
            strcpy(machine_,"Unknown");
     }
 
-ostype = new char[strlen(ostype_)+1];
-strcpy(ostype,ostype_);
-osname = new char[strlen(osname_)+1];
-strcpy(osname,osname_);
-osrelease = new char[strlen(osrelease_)+1];
-strcpy(osrelease,osrelease_);
+type = new char[strlen(ostype_)+1];
+strcpy(type,ostype_);
+name = new char[strlen(osname_)+1];
+strcpy(name,osname_);
+release = new char[strlen(osrelease_)+1];
+strcpy(release,osrelease_);
 machine = new char[strlen(machine_)+1];
 strcpy(machine,machine_);
 
@@ -185,15 +185,15 @@ strcpy(machine,machine_);
 #include <stdio.h>
 #include <string.h>
 
-void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+ cOS::cOS(){
     // moet nog onderzoeken hoe dit onder OS/2 werkt. Heb momenteel geen
     // OS/2 installatie.
-    ostype = new char [5];
-    strcpy (ostype, "OS/2" );
-    osname = new char [5];
-    strcpy (osname, "OS/2" );
-    osrelease = new char [4];
-    strcpy ( osrelease, "N/A" );
+    type = new char [5];
+    strcpy (type, "OS/2" );
+    name = new char [5];
+    strcpy (name, "OS/2" );
+    release = new char [4];
+    strcpy ( release, "N/A" );
     machine = new char [4];
     strcpy ( machine , "N/A" );
 }
@@ -207,15 +207,15 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
 #include <stdio.h>
 #include <string.h>
 
-void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+cOS::cOS()
  
      // ff onderzoeken
-    ostype = new char [6];
-    strcpy (ostype, "Win16" );
-    osname = new char [6];
-    strcpy (osname, "Win16" );
-    osrelease = new char [4];
-    strcpy ( osrelease, "N/A" );
+    type = new char [6];
+    strcpy (type, "Win16" );
+    name = new char [6];
+    strcpy (name, "Win16" );
+    release = new char [4];
+    strcpy ( release, "N/A" );
     machine = new char [4];
     strcpy ( machine , "N/A" ); 
 }
@@ -228,7 +228,7 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
 #include <stdio.h>
 #include <string.h>
 
-void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
+ cOS::cOS(){
     FILE *myfile;
     
     system("uname -s >./ostype");
@@ -240,14 +240,14 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
         fseek(myfile,0,2);
         int filesize=ftell(myfile);
         fseek(myfile,0,0);
-        ostype = new char[filesize+1];
-        fread(ostype,filesize,1,myfile);
+        type = new char[filesize+1];
+        fread(type,filesize,1,myfile);
         fclose(myfile);
         remove("./ostype");
     }
     else{
-        ostype = new char[8];
-        strcpy(ostype,"Unknown");
+        type = new char[8];
+        strcpy(type,"Unknown");
     }
     
     myfile= fopen ("./osrelease","rt");    
@@ -255,14 +255,14 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
         fseek(myfile,0,2);
         int filesize=ftell(myfile);
         fseek(myfile,0,0);
-        osrelease = new char[filesize+1];
-        fread(osrelease,filesize,1,myfile);
+        release = new char[filesize+1];
+        fread(release,filesize,1,myfile);
         fclose(myfile);
         remove("./osrelease");
     }
     else{
-        osrelease = new char[8];
-        strcpy(osrelease,"Unknown");
+        release = new char[8];
+        strcpy(release,"Unknown");
     }
     
     myfile= fopen ("./machine","rt");    
@@ -281,15 +281,22 @@ void getOSinfo(char *&ostype, char *&osrelease, char *&osname, char *&machine){
     }
     
     
-    ostype[strlen(ostype)-1]=0;
-    osrelease[strlen(osrelease)-1]=0;
+    type[strlen(type)-1]=0;
+    release[strlen(release)-1]=0;
     machine[strlen(machine)-1]=0;
-    osname= new char [strlen(ostype) + strlen(osrelease) + 2];
-    strcpy(osname,ostype);
-    osname[strlen(osname)+1]=0x00;
-    osname[strlen(osname)]=0x20;
-    strcpy(osname+strlen(osname),osrelease);
+    name= new char [strlen(type) + strlen(release) + 2];
+    strcpy(name,type);
+    name[strlen(name)+1]=0x00;
+    name[strlen(name)]=0x20;
+    strcpy(name+strlen(name),release);
     
     
 }
 #endif
+	
+cOS::~cOS(){
+	delete[] type;
+	delete[] release;
+	delete[] name;
+	delete[] machine;
+	}

@@ -1,28 +1,40 @@
+//---------------------------------------------------------------------------
+//Borland compatibility.
 #if defined(__BORLANDC__) || defined(__BCPLUSPLUS__)
 #define strcasecmp strcmpi
 #endif
 //---------------------------------------------------------------------------
-// todo : opruimen bij afsluiten bottekop. 
-
-//---------------------------------------------------------------------------
-
 #include <stdio.h>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include "fcom.h"
 using namespace std;
 //---------------------------------------------------------------------------
-struct fcommand {
-    char *command;
-    char *action;
-    };
-vector <fcommand> fcommands;    
+cFileCommands::cFileCommands(){
+	ReadFile();
+}
 //---------------------------------------------------------------------------
-//    char *nick="Testing";
-    
-//---------------------------------------------------------------------------    
-
-int ReadFile(){
+void cFileCommands::Clean(){
+	while (fcommands.size()>0){
+		unsigned int i; 
+		i = fcommands.size()-1;
+       	delete[] fcommands[i].command;
+		delete[] fcommands[i].action;
+       	fcommands.erase(fcommands.begin()+i);
+	}
+}
+//---------------------------------------------------------------------------
+void cFileCommands::Refresh(){
+	Clean();
+	ReadFile();
+}
+//---------------------------------------------------------------------------
+cFileCommands::~cFileCommands(){
+	Clean();
+}
+//---------------------------------------------------------------------------	
+int cFileCommands::ReadFile(){
     FILE *myfile;
     myfile = fopen ( "bar.ini", "rb" );
     if ( myfile ){
@@ -41,7 +53,6 @@ int ReadFile(){
             if (temp[tel]==0x0A){
                 temp[tel]=0;
                 if (temp[tel-1]==0x0D) temp[tel-1]=0;
-//                if (temp[tel]==0)tel=-1;
                 if (strncmp(temp,"[!",2)==0){
                     char *hulp=strchr(temp,']');
                     if (hulp) *hulp=0;
@@ -56,12 +67,9 @@ int ReadFile(){
                     done = true;
                     nlc = false;
                 } else tel=-1;
-
-
             }
             if (done){
-                //printf("command : %s \naction : %s\n\n",command,action);
-                fcommand temp;
+                sCommands temp;
                 temp.action  = new char[1+strlen(action)];
                 temp.command = new char[1+strlen(command)];
                 strcpy(temp.action,action);
@@ -79,8 +87,7 @@ int ReadFile(){
     return 0;
 }
 //---------------------------------------------------------------------------
-
-char * antwoord(char * command,char * nick,char **pars){
+char * cFileCommands::Reply(char * command,char * nick,char **pars){
         printf("filecommand~!\n");
         int a;	
         char *temp,*action;
@@ -94,43 +101,27 @@ char * antwoord(char * command,char * nick,char **pars){
       }else return NULL;
                     action = new char[666];
                     strcpy(action,temp);
-                    //nlc=false;
-                    //done=true;
-                    //tel=-1;
-                    // splitsen
-                    // zoeken naar $
                     char *hulp;
                     bool done=false;
                     while(!done){
                         hulp=strchr(temp,'$');
                         if (hulp){
-                            //printf ("$found\n");
                             if (*(hulp+1) == 'n'){
-                                //nick
-                                //printf("$n found\n");
                                 char deel1[666];
                                 char deel2[666];
                                 *hulp=0;
                                 strcpy (deel1,temp);
-                                //strncpy (deel2,hulp+2,hulp-action);
                                 strcpy (deel2,hulp+2);
-                                //printf ("deel 1 : %s\n",deel1);
-                                //printf ("deel 2 : %s\n",deel2);
                                 sprintf(action,"%s%s%s",deel1,nick,deel2);
                                 strcpy (temp,action);
                             } else
-                            //if (  (*(hulp+1) == '2') ){
                             if (  (*(hulp+1) >= '2') && (*(hulp+1) <= '9') ){
-                           //param
-    
                                 char p = *(hulp+1) - 49;
                                 char deel1[666];
                                 char deel2[666];
                                 *hulp=0;
                                 strcpy (deel1,temp);
                                 strcpy (deel2,hulp+2);
-                                //printf ("deel 1 : %s\n",deel1);
-                                //printf ("deel 2 : %s\n",deel2);
                                 sprintf(action,"%s%s%s",deel1,pars[p],deel2);
                                 strcpy (temp,action);
                             }    
@@ -143,27 +134,4 @@ char * antwoord(char * command,char * nick,char **pars){
               delete[] temp;
               return action;
                 }
-
 //---------------------------------------------------------------------------
-/*
-int main(){
-    char *pars[5];
-    pars[0]="blah0";
-    pars[1]="blah1";
-    pars[2]="blah2";
-    pars[3]="blah3";
-    pars[4]="blah4";
-
-    if (ReadFile()) {printf("ERROR READING FILE!!!\n");return 1;};   
-    char blah[128];
-    cin >> blah;
-    printf(blah);
-    char *temp=antwoord(blah, "nick" ,pars);
-    if (temp) { printf(temp); delete[] temp; }
-    
-    system("PAUSE");
- }
-
-
-
-*/

@@ -42,16 +42,16 @@ using namespace std;
 #include "irc.h"
 #include "fcom.h"
 
-//using namespace IRCclient;
 
-
+cFileCommands filecommand;
 extern IRCclient IRC;
+extern cOS os;
 //#define channels IRC.channels
 //lelijk
 //------------------------------------------------------------------------------    
 //------------------------------------------------------------------------------
 
-bool isop(char *channel, char *nick){
+bool cBot::isop(char *channel, char *nick){
     int a=0,b=0,c=0;
     IRC.getChannelNick(a,b,channel,nick);
     if ( a != -1) { 
@@ -68,14 +68,15 @@ bool isop(char *channel, char *nick){
     }// printf("\n");
     return false;
 } 
+
 //------------------------------------------------------------------------------
 
-bool botisop(char *channel){
+bool cBot::isop(char *channel){
      // naar bot
     return isop(channel, IRC.botnick);
 }
 //------------------------------------------------------------------------------
-bool isService(char *nick){
+bool cBot::isService(char *nick){
     printf("%s ",nick);
     if (strlen(nick)>4)    
         if (strcasecmp(nick+(strlen(nick)-4),"serv")==0) return true;
@@ -83,7 +84,7 @@ bool isService(char *nick){
 }
 //------------------------------------------------------------------------------
 
-bool iscsregged(char *mode){
+bool cBot::iscsregged(char *mode){
      // naar bot?
     int c=0;
     while ( c < strlen(mode)){
@@ -93,7 +94,7 @@ bool iscsregged(char *mode){
 return false;
 }
 
-bool iscsregged(char *channel,char *nick){    
+bool cBot::iscsregged(char *channel,char *nick){    
      //naar bot
     int a,b,c;
     IRC.getChannelNick(a,b,channel,nick);
@@ -110,7 +111,7 @@ bool iscsregged(char *channel,char *nick){
 }
 //------------------------------------------------------------------------------
 
-void botcommand(int type,char *nick, char *host, char *channel, char *data){
+void cBot::command(int type,char *nick, char *host, char *channel, char *data){
     
     if (isService(nick)) return; // lijkt nu me niet. maar later....
         
@@ -127,16 +128,16 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 
     
             
-    if (strncmp("!test",data,5)==0){
+    if (strncmp("test",data,4)==0){
         char temp[128]="testing, the current botnick is ";
         strcpy(temp+strlen(temp),IRC.botnick);
         IRC.sendPRIVMSG(target,temp);
         delete[] target;
         return;
     }
-    if (strncmp("!os",data,3)==0){
+    if (strncmp("os",data,2)==0){
         char temp[128];
-        sprintf(temp,"%s (%s %s %s)",osname, ostype, osrelease, machine);
+        sprintf(temp,"%s (%s %s %s)",os.name, os.type, os.release, os.machine);
         IRC.sendPRIVMSG(target,temp);
         delete[] target;
         return;
@@ -145,7 +146,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
             
     
     if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
-        if (strncmp("!lines",data,6)==0){
+        if (strncmp("lines",data,5)==0){
             char *P[3]={0,0,0};    int NrP;
             spltstr(data,NrP,P,2);
         a=-1;b=-1;
@@ -166,7 +167,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
         }
 //------------------------------------------------------------------------------
     if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
-        if (strncmp("!seen",data,5)==0){
+        if (strncmp("seen",data,4)==0){
             char *P[3]={0,0,0};    int NrP;
             spltstr(data,NrP,P,2);
         a=-1;b=-1;
@@ -225,10 +226,10 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
 
 
 
-	//if (strncmp("!id",data,3)==0) IRC.sendPRIVMSG("nickserv","identify bscp2007");
+	//if (strncmp(":id",data,3)==0) IRC.sendPRIVMSG("nickserv","identify bscp2007");
     //test
 	
-	if (strncmp("!ul",data,3)==0){
+	if (strncmp("ul",data,2)==0){
         char temp[128];
         if (strcmp(channel,IRC.botnick)!=0 )
             sprintf(temp,"Your userlevel is %d, mode %s",
@@ -239,7 +240,7 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
                     IRC.pm.userlevel,
                     IRC.pm.mode);
         IRC.sendPRIVMSG(target,temp);
-        printf("!ul\n");
+        printf(":ul\n");
         delete[] target;
         return;
     }
@@ -251,43 +252,48 @@ void botcommand(int type,char *nick, char *host, char *channel, char *data){
         ul = IRC.channels[a]->users[b]->userlevel;
 
     if (ul > 50 ){
-        if (strncmp("!nick",data,5)==0){
+        if (strncmp("nick",data,4)==0){
             char *P[3];    int NrP;
             spltstr(data,NrP,P,2);
             IRC.sendNICK(P[1]);
             delete[] target; return;
         }
 
-        if (strncmp("!join",data,5)==0){
+        if (strncmp("join",data,4)==0){
             char *P[3];    int NrP;
             spltstr(data,NrP,P,2);
             IRC.joinchannel(P[1]);
             delete[] target; return;
         }
-        if (strncmp("!part",data,5)==0){
+        if (strncmp("part",data,4)==0){
             char *P[3];    int NrP;
             spltstr(data,NrP,P,2);
             if (NrP) IRC.partchannel(P[1]); else IRC.partchannel(channel);
             delete[] target; return;
         } 
-        if (strncmp("!quit",data,5)==0){
+        if (strncmp("quit",data,4)==0){
             IRC.sendQUIT(NULL);
             delete[] target; return;
         }
+        if (strncmp("refresh",data,7)==0){
+            IRC.sendPRIVMSG(target,"Refreshing File Commands");
+			filecommand.Refresh();
+            delete[] target; return;
+        }		
  
     }
 
-        printf("blah!\n");
         char *P[3]={NULL,NULL,NULL};    int NrP;
         spltstr(data,NrP,P,2);
-        char *etemp=antwoord(P[0]+1, nick ,P);
+        //char *etemp=antwoord(P[0]+1, nick ,P);
+		char *etemp=filecommand.Reply(P[0]+1, nick ,P);
         if (etemp) { 
             IRC.sendPRIVMSG(target,etemp); 
             delete[] etemp;
             delete[] target; 
             return;
         }
-printf ("nblah2\n");     
+  
     
     
 }
@@ -296,3 +302,29 @@ printf ("nblah2\n");
     //        if (strcasecmp(to,botnick)==0){ // verander dit, botnick variable
 
 //}
+
+
+char cBot::userlevel (char *mode, char *channel, char *nick, char *host){
+// naar bot ?
+    
+        
+    if (strcasecmp(host,"Indre-7A2D8200.xs4all.nl")==0)
+        return 100; //thuis indreanet
+    if (strcasecmp(host,"Chat4all-51B52190.xs4all.nl")==0)
+        return 100; //thuis chat4all
+    
+	if (strcasecmp(host,"blaatschaap.be")==0)
+        return 100; //netadmin.chatexplosion.be
+	
+    if (strcasecmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
+        return 100; // school 0160 indeanet
+    if (strcasecmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
+        return 100; // school 0160 chat4all
+
+    if (strcasecmp(channel,"")!=0) //pm
+    if (isop(channel,nick)) return 50; //->test
+    
+    if (iscsregged(mode)) return 25; //debug??
+    
+    return 0;
+}
