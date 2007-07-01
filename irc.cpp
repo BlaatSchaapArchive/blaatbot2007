@@ -98,7 +98,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
         }            
         if (type==PAMS) { //ACTION PRIVÉ
             
-            fprintf(prive,"*%s %s*\n",nick,data);            
+            fprintf(prive,"*%s %s*\n",nick,data);
             
             //if (!(isService(nick)))
             //    IRC.sendPRIVMSG(nick,"PM not implemented yet");
@@ -112,6 +112,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
             //        sendPRIVMSG(nick,"Private Notices not implemented yet");
         }
         fclose(prive);
+        memset(&pm,0,sizeof(pm));
     }
     
     
@@ -297,8 +298,9 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
 //------------------------------------------------------------------------------
     if (type==QUIT){
 
-    /*
+
         if (strcasecmp(nick,botnick)==0){
+    /*
             // krijg ik dit wel??? --> neen krijg ERROR
 
             printf("BOT quit %s",to);
@@ -317,7 +319,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                         delete[] channels[c]->users[d]->lastsaid;
                     if (channels[c]->users[d]->oldnick)
                         delete[] channels[c]->users[d]->oldnick;
-                    delete channels[c]->users[d];    
+                    delete channels[c]->users[d];
                 }
                 fclose(channels[c]->logfile);
                 delete[] channels[c]->channel;
@@ -325,14 +327,15 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
                 //channels.erase(channels.begin()+c);
             }
         delete[] botnick;
-        }else
         */
+        }else
+
 
         printf("%s quit\n",nick);
         int a=0,b;
-        
+
         while ( a < channels.size() ){
-            for ( b = 0; ( b < channels[a]->users.size() ) && 
+            for ( b = 0; ( b < channels[a]->users.size() ) &&
                        ( strcasecmp (nick ,channels[a]->users[b]->nick) != 0); b++);
             if ( b < channels[a]->users.size() ) {// user bestaat in channel;
 // --                
@@ -490,7 +493,7 @@ void IRCclient::sendBACK(){
 //------------------------------------------------------------------------------
 void IRCclient::sendQUIT(char *reason){
     //implement quit reson message
-     send (sServer,"QUIT \xd\xa",6,0);     
+     send (sServer,"QUIT\xd\xa",6,0);     
 }
 //------------------------------------------------------------------------------
 void IRCclient::sendPRIVMSG(char *target, char *message){
@@ -592,8 +595,8 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
                 fprintf(channels[a]->logfile,"%s joined %s\n",nick,channel);
              //lelijke code!!!
                 channels[a]->users[channels[a]->users.size()-1]->userlevel=bot.userlevel(mode,channel,nick,host);
-    
-                
+
+
             }
         }else{//channel bestaat niet
 //                printf("mode %s\n",mode);
@@ -614,21 +617,21 @@ void IRCclient::userlist (char *channel, char *user, char *host, char *server,
         strcpy (newuser->realname,realname);
         newuser->lasttime = time(NULL);
         newuser->lastsaid = NULL;
-        newuser->lines = 0;        
+        newuser->lines = 0;
         newuser->oldnick=NULL;
         newuser->lasttype = 'J';
         //newuser->userlevel=userlevel(mode,channel,nick,host);
-            
+
         cIRCchannel *newchannel;
         newchannel = new cIRCchannel;
         newchannel->logfile = fopen (channel,"a");
         newchannel->channel = new char[1+strlen(channel)];
         strcpy (newchannel->channel,channel);
         channels.push_back(newchannel);
-        channels[channels.size()-1]->users.push_back(newuser); 
+        channels[channels.size()-1]->users.push_back(newuser);
         fprintf(newchannel->logfile,"%s joined %s\n",nick,channel);
         // lelijke code
-        channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->userlevel=bot.userlevel(mode,channel,nick,host);    
+        channels[channels.size()-1]->users[channels[channels.size()-1]->users.size()-1]->userlevel=bot.userlevel(mode,channel,nick,host);
     }
 }    
 //------------------------------------------------------------------------------
@@ -674,7 +677,7 @@ void IRCclient::irc_received(char *data){
             printf("BOT quit");
             // verify code with codeguard.
 /* code niet meer nodig vanwege omschrijven van struct naar klasse
-			
+
             int c,d;
                for ( c = 0 ; c < channels.size();c++){
                printf("Clearing %s\n",channels[c]->channel);
@@ -698,7 +701,14 @@ void IRCclient::irc_received(char *data){
                 delete channels[c];
                 //channels.erase(channels.begin()+c);
             } */
-        delete[] botnick;    
+            delete[] botnick;
+            while (channels.size()>0){
+                unsigned int i;
+	        i = channels.size()-1;
+	        delete channels[i];
+       	        channels.erase(channels.begin()+i);
+            }
+
         }
     }
 
@@ -800,7 +810,7 @@ void IRCclient::irc_received(char *data){
                 }
                   else {
                     if (strcasecmp(Param[2],botnick)== 0)
-                    irc_message(PMES,nick,mask,Param[2],Param[3]);    
+                    irc_message(PMES,nick,mask,Param[2],Param[3]);
                     else
                     irc_message(CMES,nick,mask,Param[2],Param[3]);
                 }
@@ -892,9 +902,9 @@ void IRCclient::receivedata(){
         //test dit disconnected detection.
         if (!(recv(sServer, temp+received_size, 1, 0))) return; 
         received_size++;
-        if (temp[received_size-1] == 0x0A  ) { 
+        if (temp[received_size-1] == 0x0A  ) {
             temp[received_size] = 0x00; //detect end of line.
-            irc_received(temp); 
+            irc_received(temp);
               received_size=0;
         }
     }
@@ -904,7 +914,7 @@ int IRCclient::connect_irc(char *ip, int port){
 //#ifdef __WIN32__
 #if defined(__WIN32__) || defined(__WIN64__) || defined (__WINDOWS__)
     SOCKADDR_IN saServer;             // WINSOCK
-    WSADATA wsda;                     
+    WSADATA wsda;
 
 // WSAStartup(MAKEWORD(1,1), &wsda);
 // compensatie voor windows 3.x kent geen makeword
@@ -912,19 +922,19 @@ int IRCclient::connect_irc(char *ip, int port){
 // 1.1 = 257
 
     WSAStartup(1, &wsda);
-    
+
 // We vragen dus WinSock 1.0 aan
 
 
-    
-#else     
+
+#else
     struct sockaddr_in saServer;      // BSD SOCKETS
-#endif   
+#endif
 
-printf("Connecting to %s:%d...\n",ip,port);    
+printf("Connecting to %s:%d...\n",ip,port);
 
-    
-    
+
+
     sServer=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     //if(sServer==SOCKET_ERROR)
 	if (!sServer)
@@ -944,31 +954,30 @@ printf("Connecting to %s:%d...\n",ip,port);
 }
 
 cIRCuser::cIRCuser(){
-	memset(this,0,sizeof(this));
+    memset(this,0,sizeof(this));
 }
 cIRCuser::~cIRCuser(){
-	delete[] user; 
-    delete[] host; 
-    delete[] server;
-    delete[] nick;     
-    delete[] mode; 
-    delete[] realname; 
-    if (lastsaid) delete[] lastsaid; 
-    if (oldnick)  delete[] oldnick; 
+    if(user)      delete[] user;
+    if(host)      delete[] host;
+    if(server)    delete[] server;
+    if(nick)      delete[] nick;
+    if(mode)      delete[] mode;
+    if(realname)  delete[] realname;
+    if (lastsaid) delete[] lastsaid;
+    if (oldnick)  delete[] oldnick;
 }
 
 cIRCchannel::cIRCchannel(){
-	memset(this,0,sizeof(this));
+    memset(this,0,sizeof(this));
 }
 
 cIRCchannel::~cIRCchannel(){
-	fclose(logfile);
-	delete[] channel;
-	while (users.size()>0){
-		unsigned int i; 
-		i = users.size()-1;
-		delete users[i];	
+    fclose(logfile);
+    delete[] channel;
+    while (users.size()>0){
+        unsigned int i;
+	i = users.size()-1;
+	delete users[i];
        	users.erase(users.begin()+i);
-	}
-	
+    }
 }

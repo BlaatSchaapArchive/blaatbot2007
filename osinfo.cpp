@@ -88,7 +88,7 @@ sprintf(osrelease_,"%d.%d.%d",
 
 if ( (winver.dwMajorVersion < 5) &&
      (winver.dwPlatformId  == 2) ){
-     sprintf(osname_,"Windows NT %s %s",osrelease,winver.szCSDVersion);
+     sprintf(osname_,"Windows NT %s %s",osrelease_,winver.szCSDVersion);
 }
 if ( (winver.dwMajorVersion == 5) &&
      (winver.dwMinorVersion == 0) &&

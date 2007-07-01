@@ -72,33 +72,32 @@
 
 		
 */
-        class cIRCuser{ 
-			public:
-        		cIRCuser();	
-				~cIRCuser();
-			
-				char *user; 
-                char *host; 
-                char *server;
-        		char *nick;     
-                char *mode; 
-                char *realname; 
-                time_t lasttime; 
-                char lasttype;
-                char *lastsaid; 
-                int  lines; 
-                char *oldnick; 
-                char userlevel;
-        };
-//------------------------------------------------------------------------------        
-        class cIRCchannel{
-			public:
-				cIRCchannel();
-				~cIRCchannel();
-				char *channel; 
-                vector <cIRCuser *> users; 
-                FILE *logfile;
-        };
+class cIRCuser{
+    public:
+        cIRCuser();
+        ~cIRCuser();
+	char *user;
+        char *host;
+        char *server;
+        char *nick;
+        char *mode;
+        char *realname;
+        time_t lasttime;
+        char lasttype;
+        char *lastsaid;
+        int  lines;
+        char *oldnick;
+        char userlevel;
+};
+//------------------------------------------------------------------------------
+class cIRCchannel{
+    public:
+        cIRCchannel();
+	~cIRCchannel();
+	char *channel;
+        vector <cIRCuser *> users;
+        FILE *logfile;
+};
 
 //------------------------------------------------------------------------------
 
@@ -124,7 +123,7 @@ public:
 
 //      vector <ircuser *> pm; // allemaal bijhouden ... of een temp object
 // maybe zelfs een 'temp-channel' als pm kanaal???
-    cIRCuser pm;
+    cIRCuser pm; // ben jij lastig aan het doen????
 
         char *botnick;
 
