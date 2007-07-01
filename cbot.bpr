@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="cbot.exe"/>
-    <OBJFILES value="main.obj bot.obj general.obj irc.obj osinfo.obj"/>
+    <OBJFILES value="main.obj bot.obj general.obj irc.obj osinfo.obj fcom.obj"/>
     <RESFILES value="cbot.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
@@ -59,6 +59,7 @@
       <FILE FILENAME="general.cpp" FORMNAME="" UNITNAME="general.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="irc.cpp" FORMNAME="" UNITNAME="irc.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="osinfo.cpp" FORMNAME="" UNITNAME="osinfo.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="fcom.cpp" FORMNAME="" UNITNAME="fcom.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

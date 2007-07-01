@@ -207,9 +207,10 @@ strcpy(machine,machine_);
 #include <stdio.h>
 #include <string.h>
 
-cOS::cOS()
+cOS::cOS(){
  
      // ff onderzoeken
+
     type = new char [6];
     strcpy (type, "Win16" );
     name = new char [6];
@@ -293,10 +294,10 @@ cOS::cOS()
     
 }
 #endif
-	
+        
 cOS::~cOS(){
-	delete[] type;
-	delete[] release;
-	delete[] name;
-	delete[] machine;
-	}
+        delete[] type;
+        delete[] release;
+        delete[] name;
+        delete[] machine;
+        }

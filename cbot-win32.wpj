@@ -4,8 +4,8 @@ projectIdent
 VpeMain
 1
 WRect
-150
-1146
+0
+360
 10320
 9640
 2
@@ -39,5 +39,5 @@ WFileName
 14
 cbot-win32.tgt
 0
-0
+6
 7
