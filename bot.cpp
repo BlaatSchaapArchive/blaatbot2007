@@ -115,7 +115,7 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
     
     if (isService(nick)) return; // lijkt nu me niet. maar later....
         
-    int a,b;    
+    int a,b;
     IRC.getChannelNick(a,b,channel,nick);     
     char *target;
     if (strcasecmp(channel,IRC.botnick)==0 ){ /* message in prive */ 
@@ -145,7 +145,7 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
     
             
     
-    if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
+    if (strcasecmp(channel,IRC.botnick)!=0 )// message in een channel
         if (strncmp("lines",data,5)==0){
             char *P[3]={0,0,0};    int NrP;
             spltstr(data,NrP,P,2);
@@ -166,7 +166,7 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
             } printf("channel unknown\n");   delete[] target; return;
         }
 //------------------------------------------------------------------------------
-    if (strcmp(channel,IRC.botnick)!=0 )// message in een channel
+    if (strcasecmp(channel,IRC.botnick)!=0 )// message in een channel
         if (strncmp("seen",data,4)==0){
             char *P[3]={0,0,0};    int NrP;
             spltstr(data,NrP,P,2);
@@ -231,7 +231,7 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
 	
 	if (strncmp("ul",data,2)==0){
         char temp[128];
-        if (strcmp(channel,IRC.botnick)!=0 )
+        if (strcasecmp(channel,IRC.botnick)!=0 )
             sprintf(temp,"Your userlevel is %d, mode %s",
                     IRC.channels[a]->users[b]->userlevel,
                     IRC.channels[a]->users[b]->mode);
@@ -246,7 +246,7 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
     }
     int ul=0;
 
-    if (strcmp(channel,IRC.botnick)==0 )
+    if (strcasecmp(channel,IRC.botnick)==0 )
         ul = IRC.pm.userlevel;
     else
         ul = IRC.channels[a]->users[b]->userlevel;

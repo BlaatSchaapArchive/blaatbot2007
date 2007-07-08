@@ -70,11 +70,13 @@ extern cOS os;
 
 //------------------------------------------------------------------------------
 void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *data){
-        int a,b;
-    if (to)
+        int a=-1,b=-1;
+    if (to){
         getChannelNick(a,b,to,nick);
     if (strcmp(to,"*")==0) return; // Chat4All Server 8 juli
                                 // stuurt * als channame.
+    } else int breakpoint=0;
+
     if (type==PMES || type==PAMS || type==NOTP ){
         if (nick==0) nick="server"; 
             
