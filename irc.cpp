@@ -71,9 +71,10 @@ extern cOS os;
 //------------------------------------------------------------------------------
 void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *data){
         int a,b;
-    if (to) 
+    if (to)
         getChannelNick(a,b,to,nick);
-    
+    if (strcmp(to,"*")==0) return; // Chat4All Server 8 juli
+                                // stuurt * als channame.
     if (type==PMES || type==PAMS || type==NOTP ){
         if (nick==0) nick="server"; 
             
@@ -548,6 +549,9 @@ char IRCclient::userlevel (char *mode, char *channel, char *nick, char *host){
 void IRCclient::userlist (char *channel, char *user, char *host, char *server,
     char *nick,    char *mode, char *realname)
 {
+    if (strcmp(channel,"*")==0)return;
+    // chat4all sends * as channelname is a mess?????
+    
     int a,b;
     getChannelNick(a,b,channel,nick);
     if ( a != -1) {
@@ -730,7 +734,7 @@ void IRCclient::irc_received(char *data){
                 splitnickuser(Param[0],nick,mask);    
                     
                 // --- kies hier ---- 
-                if (strncmp (Param[1],"JOIN",4) == 0) 
+                if (strncmp (Param[1],"JOIN",4) == 0)
                     irc_message(JOIN,nick,mask,Param[2]+1,NULL);
                 if (strncmp (Param[1],"PART",4) == 0) 
                     irc_message(PART,nick,mask,Param[2],Param[3]);
@@ -759,15 +763,15 @@ void IRCclient::irc_received(char *data){
 //------------------------------------------------------------------------------
     if (strlen(Param[1])==6){
         if (strncmp (Param[1],"NOTICE",6) == 0){
-            if (NrParam == 3 ) { 
+            if (NrParam == 3 ) {
                   char* nick;
                   char* mask=NULL;
-                  splitnickuser(Param[0],nick,mask);    
-                  
+                  splitnickuser(Param[0],nick,mask);
+
                   //if (mask==NULL) { printf("mask error\n"); mask = "ERROR" ; } // debug!!!
 
                 if (strcasecmp(Param[2],botnick)== 0)
-                    irc_message(NOTP,nick,mask,Param[2],Param[3]);    
+                    irc_message(NOTP,nick,mask,Param[2],Param[3]);
                 else
                     irc_message(NOTC,nick,mask,Param[2],Param[3]);
                                     
@@ -840,20 +844,20 @@ void IRCclient::irc_received(char *data){
 			//oder hier? 	
 			char temp[128];
 			sprintf(temp, "MODE %s +B\xd\xa",botnick);
-			send (sServer,temp, strlen(temp), 0);			
+			send (sServer,temp, strlen(temp), 0);
 			
 			
-    //           #ifdef indreanet    
+    //           #ifdef indreanet
     //        sendPRIVMSG("nickserv","identify bscp2007");
-    //        joinchannel("#test");
-	//			#elifdef chat4all 
-	//		sendPRIVMSG("nickserv","identify bscp2007"); 
+//            joinchannel("#test");
+	//			#elifdef chat4all
+	//		sendPRIVMSG("nickserv","identify bscp2007");
 	//		joinchannel("#blaatschaap");
 	//			#else
-			sendPRIVMSG("nickserv","identify bscp2007"); 
-            joinchannel("#country-roads");
-			joinchannel("#musixradio");
-			joinchannel("#blaatschaap");
+			sendPRIVMSG("nickserv","identify bscp2007");
+//            joinchannel("#country-roads");
+//			joinchannel("#musixradio");
+//			joinchannel("#blaatschaap");
      //       	#endif
 			
         }
@@ -900,7 +904,7 @@ void IRCclient::receivedata(){
     int received_size=0;
     while(1){
         //test dit disconnected detection.
-        if (!(recv(sServer, temp+received_size, 1, 0))) return; 
+        if (!(recv(sServer, temp+received_size, 1, 0))) return;
         received_size++;
         if (temp[received_size-1] == 0x0A  ) {
             temp[received_size] = 0x00; //detect end of line.
