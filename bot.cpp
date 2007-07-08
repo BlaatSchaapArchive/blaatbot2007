@@ -250,7 +250,35 @@ void cBot::command(int type,char *nick, char *host, char *channel, char *data){
         ul = IRC.pm.userlevel;
     else
         ul = IRC.channels[a]->users[b]->userlevel;
-
+    if (ul > 35 ){
+		if (strncmp("isclone",data,7)==0){
+			char *P[3];    int NrP;
+            spltstr(data,NrP,P,2);
+			IRC.getChannelNick(a,b,channel,P[1]);
+			char temp[128]={0};
+			if ( a != -1) { 
+                if ( b != -1 ) {
+					int c;
+					for ( c = 0 ; c < IRC.channels[a]->users.size(); c++){
+						if (strcmp(IRC.channels[a]->users[c]->nick,IRC.channels[a]->users[b]->nick))
+							if(!strcmp(IRC.channels[a]->users[c]->host,IRC.channels[a]->users[b]->host)){
+								sprintf(temp,"%s and %s are clones",
+								IRC.channels[a]->users[b]->nick,IRC.channels[a]->users[c]->nick);
+								IRC.sendPRIVMSG(target,temp);
+								delete[] target;
+								return;
+							}
+					} 
+					sprintf(temp,"%s has no clones", IRC.channels[a]->users[b]->nick);
+					IRC.sendPRIVMSG(target,temp);
+					delete[] target;
+					return;
+				}else IRC.sendPRIVMSG(target,"Unknown Nick");
+			}//channel not found
+		}
+            
+			
+	}
     if (ul > 50 ){
         if (strncmp("nick",data,4)==0){
             char *P[3];    int NrP;

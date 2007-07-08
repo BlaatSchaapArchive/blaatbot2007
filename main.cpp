@@ -70,12 +70,9 @@ int main(int argc, char *argv[]){
     
 //    ReadFile();
 //#ifdef indreanet
-    char *ip="195.28.165.175";
+//   char *ip="195.28.165.175";
 //#elifdef chat4all
-//	char *ip="62.75.201.175";
-//#else //chatexplosion	
-//	char *ip="195.162.192.21";
-
+   char *ip="62.75.201.175";
 //#endif    
     
     if (!(IRC.connect_irc(ip,port))){                            
