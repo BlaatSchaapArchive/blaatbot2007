@@ -76,7 +76,8 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
     if (strcmp(to,"*")==0) return; // Chat4All Server 8 juli
                                 // stuurt * als channame.
     } else int breakpoint=0;
-
+    if (data) strip_mIRC(data);
+    
     if (type==PMES || type==PAMS || type==NOTP ){
         if (nick==0) nick="server"; 
             
@@ -136,7 +137,7 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
             channels[a]->users[b]->lasttype = 'T';
             
 
-			strip_mIRC(data);
+
 
             // uhm dit moet uit IRCclient en naar ergens de botcode
             // dus ... uhm ... moet de hele string gepasst worden
