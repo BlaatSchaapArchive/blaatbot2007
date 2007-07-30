@@ -32,6 +32,31 @@ freely, subject to the following restrictions:
 
 */
 
+#include <string.h>
+#include <stdio.h>
+
+void strip_mIRC(char* dirtydata,  char* &cleandata){
+	cleandata = new char( 1 + strlen( dirtydata) );
+	memset (cleandata,0,1+strlen(dirtydata)); //iig
+	// zeker voldoende geheugen ... 
+	signed int dpos=0, cpos=0, count; 
+	while ( dpos < strlen(dirtydata)){
+		
+		if (dirtydata[cpos]== 3 ){
+			dpos++;
+    		count=0;
+			while ( dpos < strlen(dirtydata) && count < 2 && dirtydata[dpos]> 0x29 && dirtydata[dpos] < 0x40 ) {
+	        	dpos++;
+				count++;
+			}
+		}else if (dirtydata[dpos] < 0x20 ) dpos++; 			
+		cleandata[cpos]=dirtydata[dpos];
+		cpos++;
+		dpos++;
+	}
+	if (cleandata[0]== ' ') cleandata++; //--> problemen met freeën staks??
+    printf("%s\n%s\n",dirtydata,cleandata);
+}
 void spltstr(char *data, int &NrParam, char **Param,char nrspace){
     
     //char teller=0;

@@ -91,7 +91,9 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
         if (type==PMES) { //MESSAGE PRIVÉ
             
             fprintf(prive,"<%s> %s \n",nick,data);        
-
+            
+			
+			// test // 
             // copy-paste van CMES
             if (data[0]==':') bot.command(type,nick, host, to, data+1);            
             // ! --> :
@@ -133,6 +135,11 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
             fflush(channels[a]->logfile);
             channels[a]->users[b]->lasttype = 'T';
             
+			char * cleandata;
+			strip_mIRC(data,cleandata);
+			printf("%s\n",cleandata);
+			delete []cleandata;
+			
             // uhm dit moet uit IRCclient en naar ergens de botcode
             // dus ... uhm ... moet de hele string gepasst worden
             // naar de botcode?
@@ -857,9 +864,10 @@ void IRCclient::irc_received(char *data){
 	//		joinchannel("#blaatschaap");
 	//			#else
 			sendPRIVMSG("nickserv","identify bscp2007");
-//            joinchannel("#country-roads");
-//			joinchannel("#musixradio");
-//			joinchannel("#blaatschaap");
+            //joinchannel("#country-roads");
+			//joinchannel("#radio-blaatschaap");
+			//joinchannel("#blaatschaap");
+			joinchannel("#bscp-test");
      //       	#endif
 			
         }
@@ -981,9 +989,9 @@ cIRCchannel::~cIRCchannel(){
     fclose(logfile);
     delete[] channel;
     while (users.size()>0){
-        unsigned int i;
-	i = users.size()-1;
-	delete users[i];
-       	users.erase(users.begin()+i);
+      unsigned int i;
+	  i = users.size()-1;
+	  delete users[i];
+      users.erase(users.begin()+i);
     }
 }

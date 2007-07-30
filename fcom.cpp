@@ -41,9 +41,9 @@ int cFileCommands::ReadFile(){
         char temp[666];
         int tel=0;
         char command[128],action[666];//,finalaction[666]={0};
-                        memset (command,0,sizeof(command));
-                memset (action,0,sizeof(action));
-                memset (temp,0,sizeof(temp));
+        memset (command,0,sizeof(command));
+        memset (action,0,sizeof(action));
+        memset (temp,0,sizeof(temp));
 
         bool done=false; bool nlc=false ;
         while (!(feof(myfile))){

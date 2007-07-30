@@ -28,13 +28,11 @@ freely, subject to the following restrictions:
 --------------------------------------------------------------------------------
 
 TODO : 
-	!CRASH! Bug message in private.
 	Strip mIRC colors ( general.cpp )
 	seen commands : tijd in uu:mm:ss ( bot.cpp ) (bestaat hier een functie voor)
 	Server en Channels in files
 	Userlevels in files / Security model uitwerken
 	IRCuser / IRCchannel naar klasses omschrijven.
-	FileCommands naar klasse omschrijven
 	Activeringsteken instelbaar maken
 	
 	

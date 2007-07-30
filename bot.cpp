@@ -45,9 +45,7 @@ using namespace std;
 
 cFileCommands filecommand;
 extern IRCclient IRC;
-extern cOS os;
-//#define channels IRC.channels
-//lelijk
+extern cOS os; // uhuh waarom nu ineens een probleem
 //------------------------------------------------------------------------------    
 //------------------------------------------------------------------------------
 
