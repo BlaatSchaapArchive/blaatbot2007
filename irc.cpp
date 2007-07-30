@@ -135,11 +135,9 @@ void IRCclient::irc_message (char type, char *nick, char *host, char *to, char *
             fflush(channels[a]->logfile);
             channels[a]->users[b]->lasttype = 'T';
             
-			char * cleandata;
-			strip_mIRC(data,cleandata);
-			printf("%s\n",cleandata);
-			delete []cleandata;
-			
+
+			strip_mIRC(data);
+
             // uhm dit moet uit IRCclient en naar ergens de botcode
             // dus ... uhm ... moet de hele string gepasst worden
             // naar de botcode?
