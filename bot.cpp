@@ -340,18 +340,16 @@ char cBot::userlevel (char *mode, char *channel, char *nick, char *host){
     if (strcasecmp(host,"Chat4all-51B52190.xs4all.nl")==0)
         return 100; //thuis chat4all
     
-	if (strcasecmp(host,"blaatschaap.be")==0)
-        return 100; //netadmin.chatexplosion.be
-	
-    if (strcasecmp(host,"52E386A0.CD152A2C.3B842763.IP")==0)
-        return 100; // school 0160 indeanet
-    if (strcasecmp(host,"E2A638CC.801811FA.C98607E8.IP")==0)
-        return 100; // school 0160 chat4all
-
     if (strcasecmp(channel,"")!=0) //pm
     if (isop(channel,nick)) return 50; //->test
     
-    if (iscsregged(mode)) return 25; //debug??
+//    if (iscsregged(mode)) return 25; //debug??
+    
+    if ( (iscsregged(mode)) & (!(strcasecmp(nick, "andre"  ))) ) return 100;
+    if ( (iscsregged(mode)) & (!(strcasecmp(nick, "andrevs"))) ) return 100;
+    
+    
+    
     
     return 0;
 }
