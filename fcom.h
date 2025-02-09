@@ -3,25 +3,23 @@
 #include <vector>
 using namespace std;
 
-class cFileCommands{
+class cFileCommands {
 
-	private:
+  private:
+    struct sCommands {
+        char *command;
+        char *action;
+    };
 
-		struct sCommands {
-    		char *command;
-    		char *action;
-    	};
+    int ReadFile();
+    vector<sCommands> fcommands;
 
-		int ReadFile();
-		vector <sCommands> fcommands;  
-	
-	public:
-		
-		void Refresh();		
-		void Clean();
-		char * Reply(char * command,char * nick,char **pars);
-		cFileCommands();
-		~cFileCommands();
+  public:
+    void Refresh();
+    void Clean();
+    char *Reply(char *command, char *nick, char **pars);
+    cFileCommands();
+    ~cFileCommands();
 };
 
 #endif

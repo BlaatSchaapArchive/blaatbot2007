@@ -32,57 +32,61 @@ freely, subject to the following restrictions:
 
 */
 
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-void strip_mIRC(char* data){
+void strip_mIRC(char *data) {
 
-	char *cleandata = new char[ 1 + strlen( data) ];
-	memset (cleandata,0,1+strlen(data)); //iig
-        //memset (cleandata,0,sizeof(cleandata)); //iig
-	// zeker voldoende geheugen ...
-	signed int dpos=0, cpos=0, count;
-	while ( dpos < strlen(data)){
+    char *cleandata = new char[1 + strlen(data)];
+    memset(cleandata, 0, 1 + strlen(data)); // iig
+    // memset (cleandata,0,sizeof(cleandata)); //iig
+    //  zeker voldoende geheugen ...
+    signed int dpos = 0, cpos = 0, count;
+    while (dpos < strlen(data)) {
 
-		if (data[dpos]== 3 ){
-		  dpos++;
-    		  count=0;
-		  while ( dpos < strlen(data) && count < 2 && data[dpos]> 0x29 && data[dpos] < 0x40 ) {
-	            dpos++;
-		    count++;
-                    }
-		}else if (data[dpos] < 0x20 ) dpos++;
-		cleandata[cpos]=data[dpos];
-		cpos++;
-		dpos++;
-	}
-	if (cleandata[0]== ' ') {
-          strcpy(data,cleandata+1);
-        } else strcpy(data,cleandata);
-    printf("%s\n",data);
+        if (data[dpos] == 3) {
+            dpos++;
+            count = 0;
+            while (dpos < strlen(data) && count < 2 && data[dpos] > 0x29 && data[dpos] < 0x40) {
+                dpos++;
+                count++;
+            }
+        } else if (data[dpos] < 0x20)
+            dpos++;
+        cleandata[cpos] = data[dpos];
+        cpos++;
+        dpos++;
+    }
+    if (cleandata[0] == ' ') {
+        strcpy(data, cleandata + 1);
+    } else
+        strcpy(data, cleandata);
+    printf("%s\n", data);
 }
-void spltstr(char *data, int &NrParam, char **Param,char nrspace){
-    
-    //char teller=0;
-    char *Ptr = data; 
-    bool done=false;
+void spltstr(char *data, int &NrParam, char **Param, char nrspace) {
+
+    // char teller=0;
+    char *Ptr = data;
+    bool done = false;
     NrParam = 0;
     Param[NrParam] = data;
-    while(*Ptr != 0){
-	
-	if(*Ptr == 0x0A) *Ptr = 0x00;
-        if(*Ptr == 0x0D) *Ptr = 0x00;
-        	if(*Ptr == 0x20 && !done){
-	    	*Ptr = 0x00;
-            NrParam++;Param[NrParam] = Ptr + 1;
-			if (nrspace == NrParam) done=true;			
-		}
-        if(*Ptr == ':' && NrParam > 2 && !done) { 
-            done=true;
-     	Param[NrParam] = Ptr + 1;
-		}
+    while (*Ptr != 0) {
+
+        if (*Ptr == 0x0A)
+            *Ptr = 0x00;
+        if (*Ptr == 0x0D)
+            *Ptr = 0x00;
+        if (*Ptr == 0x20 && !done) {
+            *Ptr = 0x00;
+            NrParam++;
+            Param[NrParam] = Ptr + 1;
+            if (nrspace == NrParam)
+                done = true;
+        }
+        if (*Ptr == ':' && NrParam > 2 && !done) {
+            done = true;
+            Param[NrParam] = Ptr + 1;
+        }
         Ptr++;
     }
-    
-
 }

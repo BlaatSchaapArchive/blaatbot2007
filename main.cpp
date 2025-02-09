@@ -27,60 +27,62 @@ freely, subject to the following restrictions:
     distribution.
 --------------------------------------------------------------------------------
 
-TODO : 
-	Strip mIRC colors ( general.cpp )
-	seen commands : tijd in uu:mm:ss ( bot.cpp ) (bestaat hier een functie voor)
-	Server en Channels in files
-	Userlevels in files / Security model uitwerken
-	IRCuser / IRCchannel naar klasses omschrijven.
-	Activeringsteken instelbaar maken
-	
-	
-	
-	
+TODO :
+        Strip mIRC colors ( general.cpp )
+        seen commands : tijd in uu:mm:ss ( bot.cpp ) (bestaat hier een functie voor)
+        Server en Channels in files
+        Userlevels in files / Security model uitwerken
+        IRCuser / IRCchannel naar klasses omschrijven.
+        Activeringsteken instelbaar maken
+
+
+
+
 
 */
 
 //------------------------------------------------------------------------------
 #include <cstdlib>
 #include <iostream>
-#include <time.h> 
 #include <stdio.h>
+#include <time.h>
 #include <vector>
 
 #include "fcom.h"
 
 using namespace std;
 
-//char *ostype,*osrelease,*osname,*machine;
+// char *ostype,*osrelease,*osname,*machine;
 
 //------------------------------------------------------------------------------
 
-#include "osinfo.h"
 #include "irc.h"
+#include "osinfo.h"
 
 cOS os;
 IRCclient IRC;
 //------------------------------------------------------------------------------
-int main(int argc, char *argv[]){
-//    getOSinfo(ostype,osrelease,osname,machine);
+int main(int argc, char *argv[]) {
+    //    getOSinfo(ostype,osrelease,osname,machine);
     int port = 6667;
-    
-//    ReadFile();
-//#ifdef indreanet
-//   char *ip="195.28.165.175";
-//#elifdef chat4all
-   char *ip="85.25.252.111";
-//#endif    
-    
-    if (!(IRC.connect_irc(ip,port))){                            
-        IRC.login ();
-//        IRC.receivedata();
-        
-    printf("Connection lost\n");
-   // delete[] ostype;delete[] osrelease;delete[] osname;delete[] machine;
 
-    }
-    else printf("Connection error!\n");
+    /*
+    //    ReadFile();
+    //#ifdef indreanet
+    //   char *ip="195.28.165.175";
+    //#elifdef chat4all
+       char *ip="85.25.252.111";
+    //#endif
+    */
+    char *ip = "77.174.203.200";
+    if (!(IRC.connect_irc(ip, port))) {
+        IRC.login();
+        //        IRC.receivedata();
+
+        printf("Connection lost\n");
+        // delete[] ostype;delete[] osrelease;delete[] osname;delete[] machine;
+
+    } else
+        printf("Connection error!\n");
 }
 //------------------------------------------------------------------------------
